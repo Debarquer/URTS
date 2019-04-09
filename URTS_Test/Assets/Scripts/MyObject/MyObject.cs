@@ -15,6 +15,7 @@ public class MyObject : MonoBehaviour, IAttackable
     string myName;
     string description;
     public MyObjectType myObjectType;
+    public team team;
 
     // Start is called before the first frame update
     void Start()
@@ -37,6 +38,6 @@ public class MyObject : MonoBehaviour, IAttackable
     }
 
     public void ReceiveDamage(int damage) {
-        throw new System.NotImplementedException();
+        Destroy(gameObject);
     }
 }
