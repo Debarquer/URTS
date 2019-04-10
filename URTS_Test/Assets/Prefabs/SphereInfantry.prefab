@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 806117346733591480}
   - component: {fileID: 806117346733591481}
   - component: {fileID: 806117346733591482}
+  - component: {fileID: 9069172950624794176}
   m_Layer: 0
   m_Name: SphereInfantry
   m_TagString: Untagged
@@ -123,6 +124,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4764110cd42b8104fb2aa427b8977bc1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currHealth: 0
+  maxHealth: 5
   myObjectType: 0
   team: 1
 --- !u!195 &806117346733591481
@@ -159,3 +162,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5329e033890040243aba18b4adc537c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &9069172950624794176
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 806117346733591483}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d0df98600276874b8600f30ddc67485, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 2
+  attackRateMax: 2

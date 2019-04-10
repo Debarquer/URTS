@@ -5,6 +5,10 @@ using System.Linq;
 
 class AttackComponent : MonoBehaviour {
 
+    public int damage = 1;
+    public float attackRateMax = 2f;
+    private float attackRateCurr = 0;
+
     MyObject myObject;
 
     private void Start() {
@@ -14,16 +18,22 @@ class AttackComponent : MonoBehaviour {
     private void Update() {
         //Debug.Log("Attacking");
 
-        var enemies = FindObjectsOfType<MonoBehaviour>().OfType<IAttackable>();
-        foreach (IAttackable enemy in enemies) {
-            if((MyObject)enemy != myObject) {
-                if(((MyObject)enemy).team != myObject.team) {
-                    if (Vector3.Distance(((MyObject)enemy).transform.position, transform.position) < 10) {
-                        enemy.ReceiveDamage(1000);
+        attackRateCurr += Time.deltaTime;
+        if(attackRateCurr > attackRateMax) {
+            var enemies = FindObjectsOfType<MonoBehaviour>().OfType<IAttackable>();
+            foreach (IAttackable enemy in enemies) {
+                attackRateCurr = 0;
 
+                if ((MyObject)enemy != myObject) {
+                    if (((MyObject)enemy).team != myObject.team) {
+                        if (Vector3.Distance(((MyObject)enemy).transform.position, transform.position) < 10) {
+                            enemy.ReceiveDamage(damage);
+                            return;
+                        }
                     }
                 }
             }
         }
+        
     }
 }
