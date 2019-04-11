@@ -12,6 +12,12 @@ public class GameManager : MonoBehaviour
     public Text mineralsText;
     public Text powerText;
 
+    public Canvas RadarCanvas;
+
+    private void Start() {
+        RadarCanvas.enabled = false;
+    }
+
     public float GetMinerals() {
         return minerals;
     }
@@ -26,5 +32,9 @@ public class GameManager : MonoBehaviour
         power += amount;
         power = Mathf.Clamp(power, -999999, 999999);
         powerText.text = "Power: " + power;
+    }
+
+    public void EnableRadar(bool enabled) {
+        RadarCanvas.enabled = enabled;
     }
 }

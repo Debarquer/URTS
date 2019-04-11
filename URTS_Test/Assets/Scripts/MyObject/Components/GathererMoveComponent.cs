@@ -88,8 +88,10 @@ public class GathererMoveComponent : MoveComponent
             if(gameManager == null) {
                 gameManager = FindObjectOfType<GameManager>();
             }
-            gameManager.UpdateMinerals(delta);
 
+            if(currentMinerals > 0) {
+                gameManager.UpdateMinerals(delta);
+            }
             if (currentMinerals <= 0) {
                 nearestRefineryGetheringPoint.FreeUp();
                 currentMinerals = 0;

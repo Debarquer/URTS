@@ -736,8 +736,9 @@ GameObject:
   - component: {fileID: 7810653756738216049}
   - component: {fileID: 7598233737670323926}
   - component: {fileID: 6339585885846121706}
+  - component: {fileID: 3541354027949000978}
   m_Layer: 0
-  m_Name: PowerPlant
+  m_Name: Radar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -805,6 +806,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 94762b8fc32e0cc4fa1a5cdc006b60c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3541354027949000978
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7810653756738216047}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e91c052855472e4f8a7344d9c38e4a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1001 &365370404572290339

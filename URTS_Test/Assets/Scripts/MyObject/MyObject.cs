@@ -59,7 +59,10 @@ public class MyObject : MonoBehaviour, IAttackable
 
     private void OnDisable() {
         OnGameObjectDisabled?.Invoke(this);
-        FindObjectOfType<GameManager>().UpdatePower(powerReq);
+        GameManager gameManager = FindObjectOfType<GameManager>();
+        if(gameManager != null) {
+            gameManager.UpdatePower(powerReq);
+        }
     }
 
     void Heal() {

@@ -104,6 +104,7 @@ public class InputManager : MonoBehaviour
         if (Input.GetMouseButton(2)) {
             Update_CameraDrag();
         }
+        Update_ScrollZoom();
 
         _lastMouseGroundPlanePosition = RaycastToGround().point;
     }
@@ -223,5 +224,36 @@ public class InputManager : MonoBehaviour
         Camera.main.transform.Translate(diff, Space.World);
 
         _lastMouseGroundPlanePosition = hitPos = RaycastToGround().point;
+    }
+
+    void Update_ScrollZoom() {
+        float scrollAmount = Input.GetAxis("Mouse ScrollWheel");
+        if (Mathf.Abs(scrollAmount) > 0.01f) {
+
+            float minHeight = 10;
+            float maxHeight = 50;
+
+            Vector3 hitPos = RaycastToGround().point;
+
+            // Move camera towards hitPos
+            Vector3 dir = hitPos - Camera.main.transform.position;
+
+            Vector3 p = Camera.main.transform.position;
+
+            // Stop zooming out at a certain distance.
+            // TODO: Maybe you should still slide around at 20 zoom?
+            if (dir.y * scrollAmount < 0 || p.y < maxHeight) {
+                Camera.main.transform.Translate(dir * scrollAmount, Space.World);
+            }
+
+            p = Camera.main.transform.position;
+            if (p.y < minHeight) {
+                p.y = minHeight;
+            }
+            if (p.y > maxHeight) {
+                p.y = maxHeight;
+            }
+            Camera.main.transform.position = p;
+        }
     }
 }

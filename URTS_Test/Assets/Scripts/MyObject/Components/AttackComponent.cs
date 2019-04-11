@@ -11,8 +11,12 @@ class AttackComponent : MonoBehaviour {
 
     MyObject myObject;
 
+    LineRenderer lr;
+    MyObject targetEnemy;
+
     private void Start() {
         myObject = GetComponentInParent<MyObject>();
+        lr = GetComponent<LineRenderer>();
     }
 
     private void Update() {
@@ -27,6 +31,8 @@ class AttackComponent : MonoBehaviour {
                 if ((MyObject)enemy != myObject) {
                     if (((MyObject)enemy).team != myObject.team) {
                         if (Vector3.Distance(((MyObject)enemy).transform.position, transform.position) < 10) {
+
+                            targetEnemy = ((MyObject)enemy);
                             enemy.ReceiveDamage(damage);
                             return;
                         }
@@ -34,6 +40,14 @@ class AttackComponent : MonoBehaviour {
                 }
             }
         }
-        
+
+        if (lr != null && targetEnemy != null) {
+            lr.enabled = true;
+            lr.SetPosition(0, transform.position);
+            lr.SetPosition(1, targetEnemy.transform.position);
+        }
+        else {
+            lr.enabled = false;
+        }
     }
 }
