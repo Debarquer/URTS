@@ -5,5 +5,5 @@ using UnityEngine.AI;
 
 
 [RequireComponent(typeof(NavMeshAgent))]
-    class MoveComponent : MonoBehaviour {
+public class MoveComponent : MonoBehaviour {
 }

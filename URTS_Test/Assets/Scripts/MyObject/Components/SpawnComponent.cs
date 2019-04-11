@@ -29,6 +29,7 @@ class SpawnQueueItem{
         (spawnComponent.canQueue ||
         (!spawnComponent.spawnQueue.Contains(this) && spawnComponent.objectToSpawn != thingToSpawn))) {
 
+            gameManager.UpdateMinerals(-thingToSpawn.cost);
             spawnComponent.spawnQueue.Enqueue(this);
             nrOfQueue++;
 
@@ -48,7 +49,6 @@ class SpawnQueueItem{
     public void Dequeue() {
         nrOfQueue--;
         queueLength.text = (Mathf.Max(nrOfQueue, 0)).ToString();
-        gameManager.UpdateMinerals(-thingToSpawn.cost);
     }
 
     public void CompleteQueueItem() {

@@ -18,8 +18,16 @@ public class MyObject : MonoBehaviour, IAttackable
     public team team;
     public int powerReq;
 
-    public delegate void DisableDelegate(MyObject disabledObject);
-    public event DisableDelegate OnDisabled;
+    public delegate void GameObjectDisableDelegate(MyObject disabledObject);
+    public event GameObjectDisableDelegate OnGameObjectDisabled;
+
+    public delegate void ActivateDelegate();
+    public event ActivateDelegate OnActivate;
+
+    public delegate void DisableDelegate();
+    public event DisableDelegate OnMyObjectDisable;
+
+    public bool active = false;
 
     // Start is called before the first frame update
     void Start()
@@ -33,12 +41,24 @@ public class MyObject : MonoBehaviour, IAttackable
         
     }
 
+    public void Activate() {
+
+        Debug.Log("I am activate", this);
+        active = true;
+        OnActivate?.Invoke();
+    }
+
+    public void Disable() {
+        active = false;
+        OnMyObjectDisable?.Invoke();
+    }
+
     private void OnEnable() {
         FindObjectOfType<GameManager>().UpdatePower(-powerReq);   
     }
 
     private void OnDisable() {
-        OnDisabled?.Invoke(this);
+        OnGameObjectDisabled?.Invoke(this);
         FindObjectOfType<GameManager>().UpdatePower(powerReq);
     }
 

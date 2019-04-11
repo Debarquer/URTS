@@ -122,7 +122,7 @@ public class InputManager : MonoBehaviour
                 MyObject myObject = c.GetComponent<MyObject>();
                 if (myObject != null) {
                     selectedObjects.Add(myObject);
-                    myObject.OnDisabled += Deselect;
+                    myObject.OnGameObjectDisabled += Deselect;
                     c.GetComponentInChildren<Renderer>().material.color = Color.black;
                 }
             }
@@ -136,8 +136,6 @@ public class InputManager : MonoBehaviour
     }
 
     private ClickableComponent[] RaycastForClickableComponents() {
-
-        Debug.Log("I am a log");
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit[] hits = Physics.RaycastAll(ray);
@@ -174,6 +172,8 @@ public class InputManager : MonoBehaviour
 
     public void EndBuildingPlacement(bool success) {
         if (success) {
+            // Activate building
+            gameObjectToBePlaced.GetComponent<MyObject>().Activate();
             // Clean up variables
             gameObjectToBePlaced = null;
             buildingToBePlaced = null;
@@ -194,8 +194,6 @@ public class InputManager : MonoBehaviour
     }
 
     private void HandleBuildingPlacementInput() {
-        Debug.Log("I am a log");
-
         RaycastHit hit = RaycastToGround();
         if(gameObjectToBePlaced == null) {
             gameObjectToBePlaced = Instantiate(buildingToBePlaced, hit.point, Quaternion.identity);

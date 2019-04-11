@@ -16,13 +16,13 @@ public class GameManager : MonoBehaviour
         return minerals;
     }
 
-    public void UpdateMinerals(int amount) {
+    public void UpdateMinerals(float amount) {
         minerals += amount;
         minerals = Mathf.Clamp(minerals, 0, 999999);
         mineralsText.text = "Minerals: " + minerals;
     }
 
-    public void UpdatePower(int amount) {
+    public void UpdatePower(float amount) {
         power += amount;
         power = Mathf.Clamp(power, -999999, 999999);
         powerText.text = "Power: " + power;
