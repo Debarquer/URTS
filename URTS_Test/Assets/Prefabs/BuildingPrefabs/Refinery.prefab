@@ -1431,6 +1431,7 @@ MonoBehaviour:
   team: 0
   powerReq: 0
   active: 0
+  placed: 0
 --- !u!114 &9205742856362518714
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -561,8 +561,8 @@ NavMeshObstacle:
   m_Shape: 1
   m_Extents: {x: 0.5, y: 0.5, z: 0.5}
   m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
+  m_Carve: 1
+  m_CarveOnlyStationary: 0
   m_Center: {x: 0, y: 0, z: 0}
   m_TimeToStationary: 0.5
 --- !u!1 &7810653756738216047
@@ -649,6 +649,7 @@ MonoBehaviour:
   team: 0
   powerReq: 10
   active: 0
+  placed: 0
 --- !u!208 &7598233737670323926
 NavMeshObstacle:
   m_ObjectHideFlags: 0
@@ -695,14 +696,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 0.4
   attackRateMax: 0.1
+  attackRateCurr: 0
   attackRange: 45
   myObject: {fileID: 0}
+  targetEnemy: {fileID: 0}
   attackType: 0
   effectiveTargets: []
   standardTargets: []
   ineffectiveTargets: []
   firePoint: {fileID: 2287334747190862609}
   weapon: {fileID: 4600382404231321639}
+  targetAttackableComponent: {fileID: 0}
 --- !u!120 &7244265065326506061
 LineRenderer:
   m_ObjectHideFlags: 0

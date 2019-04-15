@@ -104,8 +104,8 @@ NavMeshObstacle:
   m_Shape: 1
   m_Extents: {x: 0.5, y: 0.5, z: 0.5}
   m_MoveThreshold: 0.1
-  m_Carve: 0
-  m_CarveOnlyStationary: 1
+  m_Carve: 1
+  m_CarveOnlyStationary: 0
   m_Center: {x: 0, y: 0, z: 0}
   m_TimeToStationary: 0.5
 --- !u!1 &7810653756738216047
@@ -186,6 +186,7 @@ MonoBehaviour:
   team: 0
   powerReq: 0
   active: 0
+  placed: 0
 --- !u!208 &7598233737670323926
 NavMeshObstacle:
   m_ObjectHideFlags: 0
