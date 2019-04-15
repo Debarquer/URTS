@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum team { A, B, C, D };
+public enum Team { A, B, C, D };
 public class GameManager : MonoBehaviour
 {
     float minerals = 1500;
@@ -32,9 +32,34 @@ public class GameManager : MonoBehaviour
         power += amount;
         power = Mathf.Clamp(power, -999999, 999999);
         powerText.text = "Power: " + power;
+
+        if (power - amount <= 0 && power > 0) {
+            // Power restored
+            ActivatePoweredBuildings();
+        }
+        else if(power - amount > 0 && power <= 0) {
+            // Power lost
+            DeactivatePoweredBuildings();
+        }
+    }
+
+    public float GetPower() {
+        return power;
     }
 
     public void EnableRadar(bool enabled) {
         RadarCanvas.enabled = enabled;
+    }
+
+    private void DeactivatePoweredBuildings() {
+        foreach(MyObject myObject in FindObjectsOfType<MyObject>()) {
+            myObject.Disable();
+        }
+    }
+
+    private void ActivatePoweredBuildings() {
+        foreach (MyObject myObject in FindObjectsOfType<MyObject>()) {
+            myObject.Activate();
+        }
     }
 }

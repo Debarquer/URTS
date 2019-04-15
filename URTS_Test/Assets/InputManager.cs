@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 enum InputMode { StandardInGame, BuildingPlacement };
 public class InputManager : MonoBehaviour
@@ -15,16 +16,18 @@ public class InputManager : MonoBehaviour
     Vector3 dragEndPos;
     float dragTimer = 0f;
 
-    List<MyObject> selectedObjects = new List<MyObject>();
+    List<SelectableComponent> selectedObjects = new List<SelectableComponent>();
 
     InputMode inputMode = InputMode.StandardInGame;
+
+    public Image selectionImage;
 
     #endregion
 
     #region InputMode.BuildingPlacement Variables
 
     MyObject buildingToBePlaced = null;
-    MyObject gameObjectToBePlaced = null;
+    GameObject gameObjectToBePlaced = null;
     private Vector3 _lastMouseGroundPlanePosition;
 
     public delegate void BuildingPlacedSuccessfullyDelegate();
@@ -51,7 +54,7 @@ public class InputManager : MonoBehaviour
     }
 
     public void Deselect(MyObject objectToDeselect) {
-        selectedObjects.Remove(objectToDeselect);
+        selectedObjects.Remove(objectToDeselect.GetComponent<SelectableComponent>());
     }
 
     private void InitializeStandardInput() {
@@ -65,12 +68,26 @@ public class InputManager : MonoBehaviour
         }
         if (Input.GetMouseButton(0)) {
             dragTimer += Time.deltaTime;
+
+            RaycastHit hit = RaycastToGround();
+
+            dragEndPos = hit.point;
+
+            Vector3 midPoint = (dragStartPos + dragEndPos) / 2;
+            Vector3 extents = new Vector3(Mathf.Abs((dragStartPos - midPoint).x), Mathf.Abs((dragStartPos - midPoint).y), Mathf.Abs((dragStartPos - midPoint).z)) * 2;
+
+            selectionImage.transform.position = midPoint;
+            selectionImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, extents.x);
+            selectionImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, extents.z);
         }
         if (Input.GetMouseButtonUp(0)) {
             if (dragTimer < 0.1f) {
-                foreach (MyObject selectedObject in selectedObjects) {
+                selectionImage.enabled = false;
+
+                foreach (SelectableComponent selectedObject in selectedObjects) {
                     if (selectedObject != null) {
-                        selectedObject.GetComponentInChildren<Renderer>().material.color = Color.white;
+                        //selectedObject.GetComponentInChildren<Renderer>().material.color = Color.white;
+                        selectedObject.Deselect();
                     }
                 }
                 selectedObjects.Clear();
@@ -94,7 +111,7 @@ public class InputManager : MonoBehaviour
 
             dragStartPos = hit.point;
 
-            foreach (MyObject selectedObject in selectedObjects) {
+            foreach (SelectableComponent selectedObject in selectedObjects) {
                 MoveComponent mc = selectedObject.GetComponent<MoveComponent>();
                 if (mc != null) {
                     mc.GetComponent<UnityEngine.AI.NavMeshAgent>().destination = hit.point;
@@ -110,6 +127,8 @@ public class InputManager : MonoBehaviour
     }
 
     private void EndDrag() {
+        selectionImage.enabled = false;
+
         RaycastHit hit = RaycastToGround();
 
         dragEndPos = hit.point;
@@ -120,17 +139,20 @@ public class InputManager : MonoBehaviour
             Collider[] objectHoveredOver = Physics.OverlapBox(midPoint, extents);
 
             foreach (Collider c in objectHoveredOver) {
-                MyObject myObject = c.GetComponent<MyObject>();
+                SelectableComponent myObject = c.GetComponent<SelectableComponent>();
                 if (myObject != null) {
                     selectedObjects.Add(myObject);
-                    myObject.OnGameObjectDisabled += Deselect;
-                    c.GetComponentInChildren<Renderer>().material.color = Color.black;
+                    myObject.GetComponent<MyObject>().OnGameObjectDisabled += Deselect;
+
+                    myObject.Select();
                 }
             }
         }
     }
 
     private void StartDrag() {
+        selectionImage.enabled = true;
+
         RaycastHit hit = RaycastToGround();
 
         dragStartPos = hit.point;
@@ -174,6 +196,7 @@ public class InputManager : MonoBehaviour
     public void EndBuildingPlacement(bool success) {
         if (success) {
             // Activate building
+            gameObjectToBePlaced.GetComponent<MyObject>().OnPlaced();
             gameObjectToBePlaced.GetComponent<MyObject>().Activate();
             // Clean up variables
             gameObjectToBePlaced = null;
@@ -197,7 +220,7 @@ public class InputManager : MonoBehaviour
     private void HandleBuildingPlacementInput() {
         RaycastHit hit = RaycastToGround();
         if(gameObjectToBePlaced == null) {
-            gameObjectToBePlaced = Instantiate(buildingToBePlaced, hit.point, Quaternion.identity);
+            gameObjectToBePlaced = Instantiate(buildingToBePlaced.gameObject, hit.point, Quaternion.identity);
         }
         else {
             gameObjectToBePlaced.transform.position = hit.point;
@@ -231,7 +254,7 @@ public class InputManager : MonoBehaviour
         if (Mathf.Abs(scrollAmount) > 0.01f) {
 
             float minHeight = 10;
-            float maxHeight = 50;
+            float maxHeight = 75;
 
             Vector3 hitPos = RaycastToGround().point;
 

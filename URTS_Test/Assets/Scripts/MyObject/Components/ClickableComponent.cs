@@ -11,8 +11,6 @@ public class ClickableComponent : MonoBehaviour
     public event OnUnClickDelegate OnUnClick;
 
     private void OnEnable() {
-
-        Debug.Log("I am a log");
         ClickableComponentManager.instance.AddClickableComponent(this);
     }
 
@@ -21,8 +19,6 @@ public class ClickableComponent : MonoBehaviour
     }
 
     public void Click() {
-        Debug.Log("You clicked on " + name);
-
         OnClick?.Invoke();
     }
 

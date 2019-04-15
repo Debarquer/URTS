@@ -2,20 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum MyObjectType { Light, Heavy, VHeavy };
-
-public class MyObject : MonoBehaviour, IAttackable
+public class MyObject : MonoBehaviour
 {
     int owner;
     float moveSpeed;
     public int cost;
     // graphics
-    public float currHealth;
-    public float maxHealth = 5;
+    //public float currHealth;
+    //public float maxHealth = 5;
     string myName;
     string description;
     public MyObjectType myObjectType;
-    public team team;
+    public Team team;
     public int powerReq;
 
     public delegate void GameObjectDisableDelegate(MyObject disabledObject);
@@ -28,24 +26,25 @@ public class MyObject : MonoBehaviour, IAttackable
     public event DisableDelegate OnMyObjectDisable;
 
     public bool active = false;
+    public bool placed = false;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        currHealth = maxHealth;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+    public void OnPlaced() {
+        if(team == Team.A) {
+            FindObjectOfType<GameManager>().UpdatePower(-powerReq);
+            placed = true;
+        }
     }
 
     public void Activate() {
-
-        Debug.Log("I am activate", this);
-        active = true;
-        OnActivate?.Invoke();
+        if(powerReq > 0 && FindObjectOfType<GameManager>().GetPower() <= 0) {
+            // Not enough power
+        }
+        else {
+            if(name == "Radar(Clone)")
+                Debug.Log("Activating: " + name);
+            active = true;
+            OnActivate?.Invoke();
+        }     
     }
 
     public void Disable() {
@@ -54,13 +53,12 @@ public class MyObject : MonoBehaviour, IAttackable
     }
 
     private void OnEnable() {
-        FindObjectOfType<GameManager>().UpdatePower(-powerReq);   
     }
 
     private void OnDisable() {
         OnGameObjectDisabled?.Invoke(this);
         GameManager gameManager = FindObjectOfType<GameManager>();
-        if(gameManager != null) {
+        if(gameManager != null && placed && team == Team.A) {
             gameManager.UpdatePower(powerReq);
         }
     }
@@ -71,18 +69,5 @@ public class MyObject : MonoBehaviour, IAttackable
 
     virtual public void LoadFromScriptableObject<T>(T scriptableObject) where T : MySO {
         throw new System.NotImplementedException();
-    }
-
-    public void ReceiveDamage(int damage) {
-        currHealth -= damage;
-
-        float t = 1 - (float)currHealth / (float)maxHealth;
-
-        Debug.Log(Color.Lerp(Color.green, Color.green, t));
-        GetComponentInChildren<Renderer>().material.color = Color.Lerp(Color.green, Color.red, t);
-
-        if(currHealth <= 0) {
-            Destroy(gameObject);
-        }
     }
 }

@@ -7,6 +7,7 @@ using UnityEngine.UI;
 class SpawnQueueItem{
     public Image UICooldownImage;
     public Text queueLength;
+    public Text costText;
     public MyObject thingToSpawn;
     SpawnComponent spawnComponent;
 
@@ -14,16 +15,17 @@ class SpawnQueueItem{
 
     int nrOfQueue;
 
-    public SpawnQueueItem(Image image, Text text, MyObject myObject, SpawnComponent spawnComponent) {
+    public SpawnQueueItem(Image image, Text text, MyObject myObject, SpawnComponent spawnComponent, Text costText) {
         UICooldownImage = image;
         queueLength = text;
         thingToSpawn = myObject;
         this.spawnComponent = spawnComponent;
+        this.costText = costText;
         nrOfQueue = 0;
         gameManager = GameObject.FindObjectOfType<GameManager>();
     }
 
-    public void EnqueuePrefab(int a, float b, string c) {
+    public void EnqueuePrefab() {
         if (
         gameManager.GetMinerals() >= thingToSpawn.cost &&
         (spawnComponent.canQueue ||
@@ -67,7 +69,7 @@ class SpawnComponent : MonoBehaviour {
     [HideInInspector] public float spawntimerMax = 5f;
     [HideInInspector] public float spawntimerCurr = 0f;
     Image UICoolDownImage;
-    float spriteMaxSize = 200;
+    float spriteMaxSize = 100;
 
     public List<InfantryUnit> UnitPrefabSO;
     public Dictionary<InfantryUnit, SpawnQueueItem> infantryUnitToSpawnQueueItem = new Dictionary<InfantryUnit, SpawnQueueItem>();
@@ -78,8 +80,6 @@ class SpawnComponent : MonoBehaviour {
     Text queueLength;
 
     public Transform buildingContainer;
-
-    string testString = "HJASFNJDAF";
 
     public bool manuallyPlaced = false;
     public bool canQueue = true;
@@ -92,24 +92,29 @@ class SpawnComponent : MonoBehaviour {
             GameObject tmpGO = Instantiate(iu.UIGameObjectPrefab, buildingContainer);
 
             Image imageTmp = null;
-            Text textTmp = null;
+            Text queueText = null;
+            Text costTxt = null;
 
             for (int i = 0; i < tmpGO.transform.childCount; i++) {
                 if (tmpGO.transform.GetChild(i).name == "UICooldownImage") {
                     imageTmp = tmpGO.transform.GetChild(i).GetComponent<Image>();
                 }
                 else if (tmpGO.transform.GetChild(i).name == "QueueLength") {
-                    textTmp = tmpGO.transform.GetChild(i).GetComponent<Text>();
+                    queueText = tmpGO.transform.GetChild(i).GetComponent<Text>();
                 }
                 else if (tmpGO.transform.GetChild(i).name == "MainText") {
                     tmpGO.transform.GetChild(i).GetComponent<Text>().text = iu.name;
-                } 
+                }
+                else if (tmpGO.transform.GetChild(i).name == "CostText") {
+                    costTxt = tmpGO.transform.GetChild(i).GetComponent<Text>();
+                    costTxt.text = iu.MyObject.cost.ToString();
+                }
             }
 
-            infantryUnitToSpawnQueueItem[iu] = new SpawnQueueItem(imageTmp, textTmp, iu.MyObject, this);
+            infantryUnitToSpawnQueueItem[iu] = new SpawnQueueItem(imageTmp, queueText, iu.MyObject, this, costTxt);
 
             Button tmpButton = tmpGO.GetComponentInChildren<Button>();
-            tmpButton.onClick.AddListener(delegate { infantryUnitToSpawnQueueItem[iu].EnqueuePrefab(5, 5, testString); });
+            tmpButton.onClick.AddListener(delegate { infantryUnitToSpawnQueueItem[iu].EnqueuePrefab(); });
         }
 
         ClickableComponent clickableComponent = GetComponent<ClickableComponent>();
@@ -137,6 +142,7 @@ class SpawnComponent : MonoBehaviour {
                     UICoolDownImage.rectTransform.sizeDelta = new Vector2(UICoolDownImage.rectTransform.sizeDelta.x, 0);
 
                     MyObject tmp = Instantiate(objectToSpawn, transform.position + UnityEngine.Random.insideUnitSphere, Quaternion.identity);
+                    tmp.Activate();
                     objectToSpawn = null;
                     currentSpawnQueueItem = null;
                     tmp.team = GetComponent<MyObject>().team;

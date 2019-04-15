@@ -22,9 +22,8 @@ public class RefineryGatheringPoint : MonoBehaviour
     }
 
     private void InstantiateFreeGatherer() {
-
-        Debug.Log("I am instantiating", this);
         Instantiate(gathererPrefab, transform.position, Quaternion.identity);
+        GetComponentInParent<MyObject>().OnActivate -= InstantiateFreeGatherer;
     }
 
     public bool IsAvailable() {

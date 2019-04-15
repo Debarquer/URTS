@@ -28,15 +28,8 @@ public class ResourceNode : MonoBehaviour
     }
 
     public GameObject GetGathererPoint() {
-
-
-        Debug.Log("Getting gatherer point");
-
         foreach(GameObject gathererPoint in gathererPoints) {
             if (isPointAvailable[gathererPoint]) {
-
-                Debug.Log("Returning a valid gathering point");
-
                 isPointAvailable[gathererPoint] = false;
                 return gathererPoint;
             }

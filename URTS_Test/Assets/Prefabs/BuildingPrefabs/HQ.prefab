@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 4917093497639776629}
   - component: {fileID: 2269914697379663603}
   - component: {fileID: 3126094827254557358}
+  - component: {fileID: 1947700283606231177}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -416,6 +417,22 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 14
   m_Mesh: {fileID: 0}
+--- !u!208 &1947700283606231177
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4863501325073645115}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 0.5, y: 1.5000001, z: 1.5000001}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 0.5, y: 1.5000001, z: -0.5}
+  m_TimeToStationary: 0.5
 --- !u!1 &6735013015269243052
 GameObject:
   m_ObjectHideFlags: 0
@@ -429,6 +446,7 @@ GameObject:
   - component: {fileID: 1667866471535814241}
   - component: {fileID: 7797981079077331163}
   - component: {fileID: 7753845210285902879}
+  - component: {fileID: 1372312406411170791}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -724,6 +742,22 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 14
   m_Mesh: {fileID: 0}
+--- !u!208 &1372312406411170791
+NavMeshObstacle:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6735013015269243052}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Shape: 1
+  m_Extents: {x: 1, y: 1, z: 1.5000001}
+  m_MoveThreshold: 0.1
+  m_Carve: 0
+  m_CarveOnlyStationary: 1
+  m_Center: {x: 1, y: 1, z: -1.5000001}
+  m_TimeToStationary: 0.5
 --- !u!1 &7810653756738216047
 GameObject:
   m_ObjectHideFlags: 0
@@ -736,8 +770,10 @@ GameObject:
   - component: {fileID: 7810653756738216049}
   - component: {fileID: 7598233737670323926}
   - component: {fileID: 6339585885846121706}
+  - component: {fileID: 1646329618976432350}
+  - component: {fileID: 2341543506286876164}
   m_Layer: 0
-  m_Name: PowerPlant
+  m_Name: HQ
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -773,11 +809,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cost: 200
-  currHealth: 0
-  maxHealth: 5
   myObjectType: 0
   team: 0
-  powerReq: -15
+  powerReq: 0
   active: 0
 --- !u!208 &7598233737670323926
 NavMeshObstacle:
@@ -807,6 +841,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94762b8fc32e0cc4fa1a5cdc006b60c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1646329618976432350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7810653756738216047}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c99ec3ac24c8cd4b8f6f9606f9b48aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2341543506286876164
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7810653756738216047}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3a4b94c070ae27488ac9e3413f11b75, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currHealth: 0
+  maxHealth: 5
+  renderers:
+  - {fileID: 4917093497639776629}
+  - {fileID: 1667866471535814241}
 --- !u!1001 &365370404572290339
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -873,11 +936,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3052731134530314547, guid: 444ffd782c500f84baf340c46c73a939,
-        type: 3}
-      propertyPath: m_Mesh
-      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 7155876486264934243, guid: 444ffd782c500f84baf340c46c73a939,
         type: 3}
@@ -1045,6 +1103,11 @@ PrefabInstance:
       value: NaN
       objectReference: {fileID: 0}
     - target: {fileID: 1627552080967294526, guid: 444ffd782c500f84baf340c46c73a939,
+        type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3052731134530314547, guid: 444ffd782c500f84baf340c46c73a939,
         type: 3}
       propertyPath: m_Mesh
       value: 
