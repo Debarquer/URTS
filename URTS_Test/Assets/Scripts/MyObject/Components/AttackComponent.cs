@@ -47,9 +47,9 @@ class AttackComponent : MonoBehaviour {
                 targetAttackableComponent = null;
 
                 if (effectiveTargets != null && effectiveTargets.Count > 0) {
-                    Debug.Log("There are effective targets");
+                    //Debug.Log("There are effective targets");
                     if (targetEnemy == null || targetAttackableComponent == null) {
-                        Debug.Log("We require a new target");
+                        //Debug.Log("We require a new target");
                         deadenemies = FindTarget(effectiveTargets);
                     }
                     foreach (AttackableComponent deadenemy in deadenemies) {
@@ -105,7 +105,7 @@ class AttackComponent : MonoBehaviour {
     }
 
     private List<AttackableComponent> FindTarget(List<AttackableComponent> targets){
-        Debug.Log("Finding targets...");
+        //Debug.Log("Finding targets...");
 
         List<AttackableComponent> deadenemies = new List<AttackableComponent>();
         foreach (AttackableComponent enemy in targets) {

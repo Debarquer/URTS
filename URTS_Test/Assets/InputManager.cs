@@ -9,26 +9,31 @@ public class InputManager : MonoBehaviour
 {
     #region General variables
     public LayerMask groundLayerMask;
-    #endregion
+    Camera mainCamera;
 
-    #region InputMode.StandardInGame Variables
     Vector3 dragStartPos;
     Vector3 dragEndPos;
     float dragTimer = 0f;
+    private Vector3 _lastMouseGroundPlanePosition;
+    public Vector3 _lastMousePosition;
 
+    private float cameraTranslateXMax = 1850, cameraTranslateXMin = 100, cameraTranslateYMax = 1000, cameraTranslateYMin = 100;
+    private float cameraPosMaxX = 199, cameraPosMinX = -29, cameraPosMaxZ = 298, cameraPosMinZ = -49;
+    #endregion
+
+    #region InputMode.StandardInGame Variables
     List<SelectableComponent> selectedObjects = new List<SelectableComponent>();
 
     InputMode inputMode = InputMode.StandardInGame;
 
     public Image selectionImage;
-
     #endregion
 
     #region InputMode.BuildingPlacement Variables
 
     MyObject buildingToBePlaced = null;
     GameObject gameObjectToBePlaced = null;
-    private Vector3 _lastMouseGroundPlanePosition;
+    private float cameraTranslateSpeed = 30f;
 
     public delegate void BuildingPlacedSuccessfullyDelegate();
     public event BuildingPlacedSuccessfullyDelegate OnBuildingPlacedSuccessfully;
@@ -38,11 +43,16 @@ public class InputManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        mainCamera = Camera.main;
+
+        _lastMousePosition = Input.mousePosition;
     }
 
     // Update is called once per frame
     void Update()
     {
+        HandleCameraMovement();
+
         switch (inputMode) {
             case InputMode.StandardInGame:
                 HandleStandardInput();
@@ -51,6 +61,51 @@ public class InputManager : MonoBehaviour
                 HandleBuildingPlacementInput();
                 break;
         }
+    }
+
+    private void HandleCameraMovement() {
+        Vector3 mouseTranslateMove = Vector3.zero;
+
+        if (Input.GetMouseButton(2)) {
+            Update_CameraDrag();
+        }
+        //    float cameraTranslateXMax = 60, cameraTranslateXMin = -20, cameraTranslateYMax = 25, cameraTranslateYMin = -15;
+        else if (Input.mousePosition.x >= cameraTranslateXMax || Input.mousePosition.x <= cameraTranslateXMin || Input.mousePosition.y >= cameraTranslateYMax || Input.mousePosition.y <= cameraTranslateYMin) {
+            if (Input.mousePosition.x >= cameraTranslateXMax) {
+                mouseTranslateMove.x = Input.mousePosition.x;
+                mainCamera.transform.Translate(new Vector3(1, 0, 0) * cameraTranslateSpeed * Time.deltaTime);
+                mouseTranslateMove.x = 0;
+            }
+            if (Input.mousePosition.x <= cameraTranslateXMin) {
+                mouseTranslateMove.x = Input.mousePosition.x;
+                mainCamera.transform.Translate(new Vector3(-1, 0, 0) * cameraTranslateSpeed * Time.deltaTime);
+                mouseTranslateMove.x = 0;
+            }
+            if (Input.mousePosition.y >= cameraTranslateYMax) {
+                mouseTranslateMove.y = Input.mousePosition.y;
+                mainCamera.transform.Translate(new Vector3(0, 1, 0) * cameraTranslateSpeed * Time.deltaTime);
+                mouseTranslateMove.y = 0;
+            }
+            if (Input.mousePosition.y <= cameraTranslateYMin) {
+                mouseTranslateMove.y = Input.mousePosition.y;
+                mainCamera.transform.Translate(new Vector3(0, -1, 0) * cameraTranslateSpeed * Time.deltaTime);
+                mouseTranslateMove.y = 0;
+            }
+        }
+        else {
+            float x = Input.GetAxisRaw("Horizontal");
+            float z = Input.GetAxisRaw("Vertical");
+
+            mainCamera.transform.Translate(new Vector3(x, z, 0) * cameraTranslateSpeed * Time.deltaTime);
+        }
+        Update_ScrollZoom();
+
+        float cameraClampedX = Mathf.Clamp(mainCamera.transform.position.x, cameraPosMinX, cameraPosMaxX);
+        float cameraClampedZ = Mathf.Clamp(mainCamera.transform.position.z, cameraPosMinZ, cameraPosMaxZ);
+        mainCamera.transform.position = new Vector3(cameraClampedX, mainCamera.transform.position.y, cameraClampedZ);
+
+        _lastMouseGroundPlanePosition = RaycastToGround().point;
+        _lastMousePosition = Input.mousePosition;
     }
 
     public void Deselect(MyObject objectToDeselect) {
@@ -114,16 +169,11 @@ public class InputManager : MonoBehaviour
             foreach (SelectableComponent selectedObject in selectedObjects) {
                 MoveComponent mc = selectedObject.GetComponent<MoveComponent>();
                 if (mc != null) {
-                    mc.GetComponent<UnityEngine.AI.NavMeshAgent>().destination = hit.point;
+                    //mc.GetComponent<UnityEngine.AI.NavMeshAgent>().destination = hit.point;
+                    mc.SetAgentDestination(hit.point);
                 }
             }
         }
-        if (Input.GetMouseButton(2)) {
-            Update_CameraDrag();
-        }
-        Update_ScrollZoom();
-
-        _lastMouseGroundPlanePosition = RaycastToGround().point;
     }
 
     private void EndDrag() {
@@ -159,9 +209,9 @@ public class InputManager : MonoBehaviour
     }
 
     private ClickableComponent[] RaycastForClickableComponents() {
-
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit[] hits = Physics.RaycastAll(ray);
+        Debug.DrawRay(ray.origin, ray.direction * 100, Color.black, 1f);
 
         List<ClickableComponent> clickableComponents = new List<ClickableComponent>();
 
@@ -235,16 +285,10 @@ public class InputManager : MonoBehaviour
     }
 
     void Update_CameraDrag() {
-        //if (Input.GetMouseButtonUp(0)) {
-        //    CancelUpdateFunc();
-        //    return;
-        //}
-
         Vector3 hitPos = RaycastToGround().point;
-        //_lastMouseGroundPlanePosition = hitPos;
 
         Vector3 diff = _lastMouseGroundPlanePosition - hitPos;
-        Camera.main.transform.Translate(diff, Space.World);
+        mainCamera.transform.Translate(diff, Space.World);
 
         _lastMouseGroundPlanePosition = hitPos = RaycastToGround().point;
     }
@@ -259,24 +303,24 @@ public class InputManager : MonoBehaviour
             Vector3 hitPos = RaycastToGround().point;
 
             // Move camera towards hitPos
-            Vector3 dir = hitPos - Camera.main.transform.position;
+            Vector3 dir = hitPos - mainCamera.transform.position;
 
-            Vector3 p = Camera.main.transform.position;
+            Vector3 p = mainCamera.transform.position;
 
             // Stop zooming out at a certain distance.
-            // TODO: Maybe you should still slide around at 20 zoom?
+            // TODO: Maybe you should still slide around at max zoom?
             if (dir.y * scrollAmount < 0 || p.y < maxHeight) {
-                Camera.main.transform.Translate(dir * scrollAmount, Space.World);
+                mainCamera.transform.Translate(dir * scrollAmount, Space.World);
             }
 
-            p = Camera.main.transform.position;
+            p = mainCamera.transform.position;
             if (p.y < minHeight) {
                 p.y = minHeight;
             }
             if (p.y > maxHeight) {
                 p.y = maxHeight;
             }
-            Camera.main.transform.position = p;
+            mainCamera.transform.position = p;
         }
     }
 }

@@ -86,6 +86,9 @@ class SpawnComponent : MonoBehaviour {
 
     public Canvas canvas;
 
+    public Transform spawnPoint;
+    public Transform waypointLocation;
+
     private void Start() {
 
         foreach(InfantryUnit iu in UnitPrefabSO) {
@@ -122,6 +125,17 @@ class SpawnComponent : MonoBehaviour {
             clickableComponent.OnClick += ToggleBuildingUI;
             clickableComponent.OnUnClick += DisableBuildingUI;
         }
+        else {
+            Debug.LogWarning("SpawnComponent warning: No clickableComponent found");
+        }
+        SelectableComponent selectableComponent = GetComponent<SelectableComponent>();
+        if (selectableComponent != null) {
+            selectableComponent.OnSelect += ToggleBuildingUI;
+            selectableComponent.OnDeselect += DisableBuildingUI;
+        }
+        else {
+            Debug.LogWarning("SpawnComponent warning: No clickableComponent found");
+        }
     }
 
     private void Update() {
@@ -141,11 +155,12 @@ class SpawnComponent : MonoBehaviour {
                     spawntimerCurr = 0;
                     UICoolDownImage.rectTransform.sizeDelta = new Vector2(UICoolDownImage.rectTransform.sizeDelta.x, 0);
 
-                    MyObject tmp = Instantiate(objectToSpawn, transform.position + UnityEngine.Random.insideUnitSphere, Quaternion.identity);
+                    MyObject tmp = Instantiate(objectToSpawn, spawnPoint.position, Quaternion.identity);
                     tmp.Activate();
                     objectToSpawn = null;
                     currentSpawnQueueItem = null;
                     tmp.team = GetComponent<MyObject>().team;
+                    tmp.GetComponent<UnityEngine.AI.NavMeshAgent>().destination = waypointLocation.position;
                 }               
             }
 

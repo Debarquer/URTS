@@ -40,8 +40,6 @@ public class MyObject : MonoBehaviour
             // Not enough power
         }
         else {
-            if(name == "Radar(Clone)")
-                Debug.Log("Activating: " + name);
             active = true;
             OnActivate?.Invoke();
         }     

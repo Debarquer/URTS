@@ -6,6 +6,13 @@ public class SelectableComponent : MonoBehaviour
 {
     public GameObject selectionIndicator;
     public GameObject rangeIndicator;
+    public Renderer waypointRenderer;
+
+    public delegate void SelectDelegate();
+    public event SelectDelegate OnSelect;
+
+    public delegate void DeselectDelegate();
+    public event DeselectDelegate OnDeselect;
 
     private void Start() {
         GetComponent<MyObject>().OnActivate += FirstDeselect;
@@ -17,16 +24,30 @@ public class SelectableComponent : MonoBehaviour
     }
 
     public void Select() {
-        selectionIndicator.SetActive(true);
+
+        OnSelect?.Invoke();
+
+        if(selectionIndicator != null)
+            selectionIndicator.SetActive(true);
         if(rangeIndicator != null) {
             rangeIndicator.SetActive(true);
+        }
+        if (waypointRenderer != null) {
+            waypointRenderer.enabled = true;
         }
     }
 
     public void Deselect() {
-        selectionIndicator.SetActive(false);
+
+        OnDeselect?.Invoke();
+
+        if (selectionIndicator != null)
+            selectionIndicator.SetActive(false);
         if (rangeIndicator != null) {
             rangeIndicator.SetActive(false);
+        }
+        if (waypointRenderer != null) {
+            waypointRenderer.enabled = false;
         }
     }
 }
