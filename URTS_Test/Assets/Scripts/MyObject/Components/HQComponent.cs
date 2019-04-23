@@ -14,9 +14,11 @@ public class HQComponent : MonoBehaviour
     private void OnDisable() {
         if(team == Team.A) {
             Debug.Log("LOSE");
+            FindObjectOfType<GameManager>().LoseGame();
         }
         else {
             Debug.Log("WIN");
+            FindObjectOfType<GameManager>().WinGame();
         }
     }
 

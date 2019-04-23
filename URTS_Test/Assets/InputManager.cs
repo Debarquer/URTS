@@ -51,6 +51,13 @@ public class InputManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyUp(KeyCode.Escape)) {
+            if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainMenu") {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
+            }
+        }
+
+
         HandleCameraMovement();
 
         switch (inputMode) {
@@ -117,6 +124,9 @@ public class InputManager : MonoBehaviour
     }
 
     private void HandleStandardInput() {
+        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
+            return;
+        }
 
         if (Input.GetMouseButtonDown(0)) {
             StartDrag();

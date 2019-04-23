@@ -10,6 +10,8 @@ public class AttackableComponent : MonoBehaviour
 
     public Renderer[] renderers;
 
+    public ParticleSystem OnDeathParticles;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -23,11 +25,19 @@ public class AttackableComponent : MonoBehaviour
     }
 
     public void ReceiveDamage(float damage) {
+        if (currHealth <= 0)
+            return;
+
         currHealth -= damage;
         ChangeColorOnHealth();
 
         if (currHealth <= 0) {
-            Destroy(gameObject);
+            foreach (Renderer renderer in renderers) {
+                renderer.enabled = false;
+            }
+            if (OnDeathParticles != null)
+                OnDeathParticles.Play();
+            Destroy(gameObject, 0.21f);
         }
     }
 

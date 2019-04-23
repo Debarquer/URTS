@@ -13,9 +13,23 @@ public class GameManager : MonoBehaviour
     public Text powerText;
 
     public Canvas RadarCanvas;
+    public GameObject LoseCanvasGO;
+    public GameObject WinCanvasGO;
 
     private void Start() {
         RadarCanvas.enabled = false;
+    }
+
+    public void LoseGame() {
+        if(LoseCanvasGO != null) {
+            LoseCanvasGO.SetActive(true);
+        }
+    }
+
+    public void WinGame() {
+        if(WinCanvasGO != null) {
+            WinCanvasGO.SetActive(true);
+        }
     }
 
     public float GetMinerals() {
@@ -61,5 +75,13 @@ public class GameManager : MonoBehaviour
         foreach (MyObject myObject in FindObjectsOfType<MyObject>()) {
             myObject.Activate();
         }
+    }
+
+    public void LoadScene(string sceneName) {
+        UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
+    }
+
+    public void ExitGame() {
+        Application.Quit();
     }
 }
