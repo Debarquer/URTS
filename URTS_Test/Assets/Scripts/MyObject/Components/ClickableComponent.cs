@@ -19,9 +19,7 @@ public class ClickableComponent : MonoBehaviour
     }
 
     public void Click() {
-
-
-        Debug.Log("I HAVE BEEN CLICKED");
+        Debug.Log("I HAVE BEEN CLICKED", this);
 
         OnClick?.Invoke();
     }

@@ -4,36 +4,36 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-enum InputMode { StandardInGame, BuildingPlacement };
+public enum InputMode { StandardInGame, BuildingPlacement };
 public class InputManager : MonoBehaviour
 {
     #region General variables
     public LayerMask groundLayerMask;
-    Camera mainCamera;
+    protected Camera mainCamera;
 
-    Vector3 dragStartPos;
-    Vector3 dragEndPos;
-    float dragTimer = 0f;
-    private Vector3 _lastMouseGroundPlanePosition;
+    protected Vector3 dragStartPos;
+    protected Vector3 dragEndPos;
+    protected float dragTimer = 0f;
+    protected Vector3 _lastMouseGroundPlanePosition;
     public Vector3 _lastMousePosition;
 
-    private float cameraTranslateXMax = 1850, cameraTranslateXMin = 100, cameraTranslateYMax = 1000, cameraTranslateYMin = 100;
-    private float cameraPosMaxX = 199, cameraPosMinX = -29, cameraPosMaxZ = 298, cameraPosMinZ = -49;
+    public float cameraTranslateXMax = 1850, cameraTranslateXMin = 100, cameraTranslateYMax = 1000, cameraTranslateYMin = 100;
+    protected float cameraPosMaxX = 199, cameraPosMinX = -29, cameraPosMaxZ = 298, cameraPosMinZ = -49;
     #endregion
 
     #region InputMode.StandardInGame Variables
-    List<SelectableComponent> selectedObjects = new List<SelectableComponent>();
+    [SerializeField] protected List<SelectableComponent> selectedObjects = new List<SelectableComponent>();
 
-    InputMode inputMode = InputMode.StandardInGame;
+    protected InputMode inputMode = InputMode.StandardInGame;
 
     public Image selectionImage;
     #endregion
 
     #region InputMode.BuildingPlacement Variables
 
-    MyObject buildingToBePlaced = null;
-    GameObject gameObjectToBePlaced = null;
-    private float cameraTranslateSpeed = 30f;
+    protected MyObject buildingToBePlaced = null;
+    protected GameObject gameObjectToBePlaced = null;
+    protected float cameraTranslateSpeed = 30f;
 
     public delegate void BuildingPlacedSuccessfullyDelegate();
     public event BuildingPlacedSuccessfullyDelegate OnBuildingPlacedSuccessfully;
@@ -41,7 +41,7 @@ public class InputManager : MonoBehaviour
     #endregion
 
     // Start is called before the first frame update
-    void Start()
+    virtual protected void Start()
     {
         mainCamera = Camera.main;
 
@@ -49,14 +49,13 @@ public class InputManager : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    virtual protected void Update()
     {
         if (Input.GetKeyUp(KeyCode.Escape)) {
             if(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "MainMenu") {
                 UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
             }
         }
-
 
         HandleCameraMovement();
 
@@ -70,7 +69,7 @@ public class InputManager : MonoBehaviour
         }
     }
 
-    private void HandleCameraMovement() {
+    protected void HandleCameraMovement() {
         Vector3 mouseTranslateMove = Vector3.zero;
 
         if (Input.GetMouseButton(2)) {
@@ -119,11 +118,11 @@ public class InputManager : MonoBehaviour
         selectedObjects.Remove(objectToDeselect.GetComponent<SelectableComponent>());
     }
 
-    private void InitializeStandardInput() {
+    protected void InitializeStandardInput() {
         inputMode = InputMode.StandardInGame;
     }
 
-    private void HandleStandardInput() {
+    protected void HandleStandardInput() {
         if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
             return;
         }
@@ -186,7 +185,7 @@ public class InputManager : MonoBehaviour
         }
     }
 
-    private void EndDrag() {
+    protected void EndDrag() {
         selectionImage.enabled = false;
 
         RaycastHit hit = RaycastToGround();
@@ -195,10 +194,10 @@ public class InputManager : MonoBehaviour
 
         if (dragStartPos != null && dragEndPos != null) {
             Vector3 midPoint = (dragStartPos + dragEndPos) / 2;
-            Vector3 extents = new Vector3(Mathf.Abs((dragStartPos - midPoint).x), Mathf.Abs((dragStartPos - midPoint).y), Mathf.Abs((dragStartPos - midPoint).z));
-            Collider[] objectHoveredOver = Physics.OverlapBox(midPoint, extents);
+            Vector3 extents = new Vector3(Mathf.Abs((dragStartPos - midPoint).x), 100, Mathf.Abs((dragStartPos - midPoint).z));
+            Collider[] objectsHoveredOver = Physics.OverlapBox(midPoint, extents);
 
-            foreach (Collider c in objectHoveredOver) {
+            foreach (Collider c in objectsHoveredOver) {
                 SelectableComponent myObject = c.GetComponent<SelectableComponent>();
                 if (myObject != null) {
                     selectedObjects.Add(myObject);
@@ -210,7 +209,9 @@ public class InputManager : MonoBehaviour
         }
     }
 
-    private void StartDrag() {
+    protected void StartDrag() {
+        DeselectAll();
+
         selectionImage.enabled = true;
 
         RaycastHit hit = RaycastToGround();
@@ -218,7 +219,14 @@ public class InputManager : MonoBehaviour
         dragStartPos = hit.point;
     }
 
-    private ClickableComponent[] RaycastForClickableComponents() {
+    private void DeselectAll() {
+        foreach (SelectableComponent selectableComponent in selectedObjects) {
+            selectableComponent.Deselect();
+        }
+        selectedObjects.Clear();
+    }
+
+    protected ClickableComponent[] RaycastForClickableComponents() {
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit[] hits = Physics.RaycastAll(ray);
         Debug.DrawRay(ray.origin, ray.direction * 100, Color.black, 1f);
@@ -241,7 +249,7 @@ public class InputManager : MonoBehaviour
         return clickableComponents.ToArray();
     }
 
-    private RaycastHit RaycastToGround() {
+    protected RaycastHit RaycastToGround() {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayerMask);
@@ -277,7 +285,7 @@ public class InputManager : MonoBehaviour
         }
     }
 
-    private void HandleBuildingPlacementInput() {
+    protected void HandleBuildingPlacementInput() {
         RaycastHit hit = RaycastToGround();
         if(gameObjectToBePlaced == null) {
             gameObjectToBePlaced = Instantiate(buildingToBePlaced.gameObject, hit.point, Quaternion.identity);
@@ -294,7 +302,7 @@ public class InputManager : MonoBehaviour
         }
     }
 
-    void Update_CameraDrag() {
+    protected void Update_CameraDrag() {
         Vector3 hitPos = RaycastToGround().point;
 
         Vector3 diff = _lastMouseGroundPlanePosition - hitPos;
@@ -303,7 +311,7 @@ public class InputManager : MonoBehaviour
         _lastMouseGroundPlanePosition = hitPos = RaycastToGround().point;
     }
 
-    void Update_ScrollZoom() {
+    protected void Update_ScrollZoom() {
         float scrollAmount = Input.GetAxis("Mouse ScrollWheel");
         if (Mathf.Abs(scrollAmount) > 0.01f) {
 
@@ -318,7 +326,6 @@ public class InputManager : MonoBehaviour
             Vector3 p = mainCamera.transform.position;
 
             // Stop zooming out at a certain distance.
-            // TODO: Maybe you should still slide around at max zoom?
             if (dir.y * scrollAmount < 0 || p.y < maxHeight) {
                 mainCamera.transform.Translate(dir * scrollAmount, Space.World);
             }

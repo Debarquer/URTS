@@ -18,6 +18,10 @@ public class AttackableComponent : MonoBehaviour
         currHealth = maxHealth;
         if (renderers != null) {
             float t = 1 - (float)currHealth / (float)maxHealth;
+
+            if (renderers == null || renderers.Length <= 0)
+                return;
+
             foreach (Renderer renderer in renderers) {
                 renderer.material.color = Color.Lerp(Color.green, Color.red, t);
             }
@@ -45,6 +49,9 @@ public class AttackableComponent : MonoBehaviour
         float t = 1 - (float)currHealth / (float)maxHealth;
 
         //Debug.Log(Color.Lerp(Color.green, Color.green, t));
+        if (renderers == null || renderers.Length <= 0)
+            return;
+
         foreach (Renderer renderer in renderers) {
             renderer.material.color = Color.Lerp(Color.green, Color.red, t);
         }

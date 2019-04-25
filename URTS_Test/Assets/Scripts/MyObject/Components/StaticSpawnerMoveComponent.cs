@@ -2,21 +2,28 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(SpawnComponent))]
 public class StaticSpawnerMoveComponent : MoveComponent
 {
     SpawnComponent spawnComponent;
+    SpawnComponentTutorial SpawnComponentTutorial;
 
     override public void SetAgentDestination(Vector3 destination) {
         if(spawnComponent == null) {
             spawnComponent = GetComponent<SpawnComponent>();
 
             if(spawnComponent == null) {
-                Debug.LogError("StaticSpawnerMoveComponent error: No spawnComponent found");
-                return;
+                SpawnComponentTutorial = GetComponent<SpawnComponentTutorial>();
+                if (SpawnComponentTutorial == null) {
+                    Debug.LogError("StaticSpawnerMoveComponent error: No spawnComponent found");
+                    return;
+                }
             }
         }
-        spawnComponent.waypointLocation.position = destination;
+
+        if (spawnComponent != null)
+            spawnComponent.waypointLocation.position = destination;
+        else
+            SpawnComponentTutorial.waypointLocation.position = destination;
     }
 
 }

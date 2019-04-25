@@ -4,18 +4,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-class SpawnQueueItem{
+
+class SpawnQueueItemTutorial {
+    public TutorialInputManager2 TutorialInputManager2;
+
     public Image UICooldownImage;
     public Text queueLength;
     public Text costText;
     public MyObject thingToSpawn;
-    protected SpawnComponent spawnComponent;
+    protected SpawnComponentTutorial spawnComponent;
 
     GameManager gameManager;
 
     int nrOfQueue;
 
-    public SpawnQueueItem(Image image, Text text, MyObject myObject, SpawnComponent spawnComponent, Text costText) {
+    public SpawnQueueItemTutorial(Image image, Text text, MyObject myObject, SpawnComponentTutorial spawnComponent, Text costText) {
         UICooldownImage = image;
         queueLength = text;
         thingToSpawn = myObject;
@@ -23,6 +26,8 @@ class SpawnQueueItem{
         this.costText = costText;
         nrOfQueue = 0;
         gameManager = GameObject.FindObjectOfType<GameManager>();
+
+        TutorialInputManager2 = GameObject.FindObjectOfType<TutorialInputManager2>();
     }
 
     public void EnqueuePrefab() {
@@ -37,7 +42,7 @@ class SpawnQueueItem{
 
             queueLength.text = (Mathf.Max(nrOfQueue, 0)).ToString();
         }
-        else if(spawnComponent.spawntimerCurr >= spawnComponent.spawntimerMax) {
+        else if (spawnComponent.spawntimerCurr >= spawnComponent.spawntimerMax) {
             // We are not allowed to queue duplicates and we are already in the queue
             // Check if the building is ready to be placed
             // If so, initiate building placement mode
@@ -53,10 +58,12 @@ class SpawnQueueItem{
         queueLength.text = (Mathf.Max(nrOfQueue, 0)).ToString();
     }
 
-    virtual public void CompleteQueueItem() {
+    public void CompleteQueueItem() {
         GameObject.FindObjectOfType<InputManager>().OnBuildingPlacedSuccessfully -= CompleteQueueItem;
         UICooldownImage.rectTransform.sizeDelta = new Vector2(UICooldownImage.rectTransform.sizeDelta.x, 0);
         spawnComponent.ContinueQueue();
+
+        TutorialInputManager2.buildings.Add(thingToSpawn.name);
     }
 
     public void Cancel() {
@@ -65,17 +72,18 @@ class SpawnQueueItem{
     }
 }
 
-class SpawnComponent : MonoBehaviour {
+
+class SpawnComponentTutorial : MonoBehaviour {
     [HideInInspector] public float spawntimerMax = 5f;
     [HideInInspector] public float spawntimerCurr = 0f;
     protected Image UICoolDownImage;
     protected float spriteMaxSize = 100;
 
     public List<InfantryUnit> UnitPrefabSO;
-    public Dictionary<InfantryUnit, SpawnQueueItem> infantryUnitToSpawnQueueItem = new Dictionary<InfantryUnit, SpawnQueueItem>();
+    public Dictionary<InfantryUnit, SpawnQueueItemTutorial> infantryUnitToSpawnQueueItem = new Dictionary<InfantryUnit, SpawnQueueItemTutorial>();
     [HideInInspector] public MyObject objectToSpawn = null;
-    public Queue<SpawnQueueItem> spawnQueue = new Queue<SpawnQueueItem>();
-    public SpawnQueueItem currentSpawnQueueItem;
+    public Queue<SpawnQueueItemTutorial> spawnQueue = new Queue<SpawnQueueItemTutorial>();
+    public SpawnQueueItemTutorial currentSpawnQueueItem;
 
     protected Text queueLength;
 
@@ -91,7 +99,7 @@ class SpawnComponent : MonoBehaviour {
 
     virtual protected void Start() {
 
-        foreach(InfantryUnit iu in UnitPrefabSO) {
+        foreach (InfantryUnit iu in UnitPrefabSO) {
             GameObject tmpGO = Instantiate(iu.UIGameObjectPrefab, buildingContainer);
 
             Image imageTmp = null;
@@ -114,14 +122,14 @@ class SpawnComponent : MonoBehaviour {
                 }
             }
 
-            infantryUnitToSpawnQueueItem[iu] = new SpawnQueueItem(imageTmp, queueText, iu.MyObject, this, costTxt);
+            infantryUnitToSpawnQueueItem[iu] = new SpawnQueueItemTutorial(imageTmp, queueText, iu.MyObject, this, costTxt);
 
             Button tmpButton = tmpGO.GetComponentInChildren<Button>();
             tmpButton.onClick.AddListener(delegate { infantryUnitToSpawnQueueItem[iu].EnqueuePrefab(); });
         }
 
         ClickableComponent clickableComponent = GetComponent<ClickableComponent>();
-        if(clickableComponent != null) {
+        if (clickableComponent != null) {
             clickableComponent.OnClick += ToggleBuildingUI;
             clickableComponent.OnUnClick += DisableBuildingUI;
         }
@@ -139,8 +147,8 @@ class SpawnComponent : MonoBehaviour {
     }
 
     protected void Update() {
-        if(spawnQueue.Count > 0 || objectToSpawn != null) {
-            if(objectToSpawn == null) {
+        if (spawnQueue.Count > 0 || objectToSpawn != null) {
+            if (objectToSpawn == null) {
                 currentSpawnQueueItem = spawnQueue.Dequeue();
                 objectToSpawn = currentSpawnQueueItem.thingToSpawn;
                 UICoolDownImage = currentSpawnQueueItem.UICooldownImage;
@@ -156,12 +164,16 @@ class SpawnComponent : MonoBehaviour {
                     UICoolDownImage.rectTransform.sizeDelta = new Vector2(UICoolDownImage.rectTransform.sizeDelta.x, 0);
 
                     MyObject tmp = Instantiate(objectToSpawn, spawnPoint.position, Quaternion.identity);
+
+                    currentSpawnQueueItem.TutorialInputManager2.buildings.Add(currentSpawnQueueItem.thingToSpawn.name);
+
                     tmp.Activate();
                     objectToSpawn = null;
                     currentSpawnQueueItem = null;
                     tmp.team = GetComponent<MyObject>().team;
                     tmp.GetComponent<UnityEngine.AI.NavMeshAgent>().destination = waypointLocation.position;
-                }               
+
+                }
             }
 
             float spriteSizeFrac = (spawntimerCurr / spawntimerMax);
@@ -169,7 +181,7 @@ class SpawnComponent : MonoBehaviour {
         }
         else {
             spawntimerCurr = 0;
-        } 
+        }
     }
 
     public void ContinueQueue() {

@@ -3041,7 +3041,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3612277049914872025}
-  - component: {fileID: 7810653756738216048}
+  - component: {fileID: 8545951576033836716}
   - component: {fileID: 7810653756738216049}
   - component: {fileID: 7598233737670323926}
   - component: {fileID: 6339585885846121706}
@@ -3051,7 +3051,7 @@ GameObject:
   - component: {fileID: 6689817028423783195}
   - component: {fileID: 7019386681263827572}
   m_Layer: 0
-  m_Name: Barracks
+  m_Name: BarracksTutorial
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3089,7 +3089,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7810653756738216048
+--- !u!114 &8545951576033836716
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -3098,7 +3098,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 7810653756738216047}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b63cb4069cb760a4a8b5d71c70f2ad40, type: 3}
+  m_Script: {fileID: 11500000, guid: 9fe00391e98c0a04a8595f3e02adaeb4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   spawntimerMax: 5

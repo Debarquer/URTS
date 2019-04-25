@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public enum Team { A, B, C, D };
 public class GameManager : MonoBehaviour
 {
-    float minerals = 1500;
+    [SerializeField] float minerals = 1500;
     float power = 0;
 
     public Text mineralsText;
@@ -17,7 +17,8 @@ public class GameManager : MonoBehaviour
     public GameObject WinCanvasGO;
 
     private void Start() {
-        RadarCanvas.enabled = false;
+        if(RadarCanvas != null)
+            RadarCanvas.enabled = false;
     }
 
     public void LoseGame() {
@@ -39,13 +40,15 @@ public class GameManager : MonoBehaviour
     public void UpdateMinerals(float amount) {
         minerals += amount;
         minerals = Mathf.Clamp(minerals, 0, 999999);
-        mineralsText.text = "Minerals: " + minerals;
+        if(mineralsText != null)
+            mineralsText.text = "Minerals: " + minerals;
     }
 
     public void UpdatePower(float amount) {
         power += amount;
         power = Mathf.Clamp(power, -999999, 999999);
-        powerText.text = "Power: " + power;
+        if(powerText != null)
+            powerText.text = "Power: " + power;
 
         if (power - amount <= 0 && power > 0) {
             // Power restored
