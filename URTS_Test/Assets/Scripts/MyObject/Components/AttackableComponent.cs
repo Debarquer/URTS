@@ -10,7 +10,9 @@ public class AttackableComponent : MonoBehaviour
 
     public Renderer[] renderers;
 
-    public ParticleSystem OnDeathParticles;
+    public GameObject OnDeathParticlesAndSound;
+
+    AudioSource audioSource;
 
     // Start is called before the first frame update
     void Start()
@@ -26,6 +28,8 @@ public class AttackableComponent : MonoBehaviour
                 renderer.material.color = Color.Lerp(Color.green, Color.red, t);
             }
         }
+
+        audioSource = GetComponent<AudioSource>();
     }
 
     public void ReceiveDamage(float damage) {
@@ -39,9 +43,12 @@ public class AttackableComponent : MonoBehaviour
             foreach (Renderer renderer in renderers) {
                 renderer.enabled = false;
             }
-            if (OnDeathParticles != null)
-                OnDeathParticles.Play();
-            Destroy(gameObject, 0.21f);
+            if (OnDeathParticlesAndSound != null)
+                Instantiate(OnDeathParticlesAndSound, transform.position, Quaternion.identity);
+            if(audioSource != null) {
+                audioSource.Play();
+            }
+            Destroy(gameObject, 0.1f);
         }
     }
 

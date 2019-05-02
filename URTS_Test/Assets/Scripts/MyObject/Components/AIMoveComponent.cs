@@ -9,16 +9,8 @@ public class AIMoveComponent : MonoBehaviour
 
     NavMeshAgent navMeshAgent;
 
-    // Start is called before the first frame update
-    void Start()
-    {
+    public void MoveToHQ() {
         NavMeshAgent navMeshAgent = GetComponent<NavMeshAgent>();
         navMeshAgent.destination = GameObject.Find("HQ").transform.position;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }

@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-class SpawnQueueItem{
+public class SpawnQueueItem {
     public Image UICooldownImage;
     public Text queueLength;
     public Text costText;
     public MyObject thingToSpawn;
-    protected SpawnComponent spawnComponent;
+    public SpawnComponent spawnComponent;
 
     GameManager gameManager;
 
@@ -23,6 +23,8 @@ class SpawnQueueItem{
         this.costText = costText;
         nrOfQueue = 0;
         gameManager = GameObject.FindObjectOfType<GameManager>();
+
+        UICooldownImage.GetComponentInParent<SpawnUIButtonScript>().SpawnQueueItem = this;
     }
 
     public void EnqueuePrefab() {
@@ -35,13 +37,16 @@ class SpawnQueueItem{
             spawnComponent.spawnQueue.Enqueue(this);
             nrOfQueue++;
 
-            queueLength.text = (Mathf.Max(nrOfQueue, 0)).ToString();
+            queueLength.text = "Queue: " + (Mathf.Max(nrOfQueue, 0)).ToString();
         }
         else if(spawnComponent.spawntimerCurr >= spawnComponent.spawntimerMax) {
             // We are not allowed to queue duplicates and we are already in the queue
             // Check if the building is ready to be placed
             // If so, initiate building placement mode
 
+            // If we are not the building in progess, return
+            if (spawnComponent.currentSpawnQueueItem != this)
+                return;
 
             GameObject.FindObjectOfType<InputManager>().InitiateBuildingPlacement(thingToSpawn);
             GameObject.FindObjectOfType<InputManager>().OnBuildingPlacedSuccessfully += CompleteQueueItem;
@@ -50,7 +55,7 @@ class SpawnQueueItem{
 
     public void Dequeue() {
         nrOfQueue--;
-        queueLength.text = (Mathf.Max(nrOfQueue, 0)).ToString();
+        queueLength.text = "Queue: " + (Mathf.Max(nrOfQueue, 0)).ToString();
     }
 
     virtual public void CompleteQueueItem() {
@@ -60,13 +65,39 @@ class SpawnQueueItem{
     }
 
     public void Cancel() {
-        gameManager.UpdateMinerals(thingToSpawn.cost);
-        CompleteQueueItem();
+        if(spawnComponent.currentSpawnQueueItem == this) {
+            gameManager.UpdateMinerals(thingToSpawn.cost);
+            CompleteQueueItem();
+        }
+        else {
+            if (spawnComponent.spawnQueue.Contains(this)) {
+                //spawnComponent.spawnQueue.
+                Queue<SpawnQueueItem> tmpqueue = new Queue<SpawnQueueItem>();
+
+                bool hasCanceledOnce = false;
+                while(spawnComponent.spawnQueue.Count > 0) {
+                    SpawnQueueItem spawnQueueItem = spawnComponent.spawnQueue.Dequeue();
+                    if(spawnQueueItem == this && !hasCanceledOnce) {
+                        hasCanceledOnce = true;
+                        spawnQueueItem.nrOfQueue--;
+                        spawnQueueItem.queueLength.text = "Queue: " + nrOfQueue.ToString();
+                        continue;
+                    }
+                    else {
+                        tmpqueue.Enqueue(spawnQueueItem);
+                    }
+                }
+
+                while (tmpqueue.Count > 0) {
+                    spawnComponent.spawnQueue.Enqueue(tmpqueue.Dequeue());
+                }
+            }
+        }
     }
 }
 
-class SpawnComponent : MonoBehaviour {
-    [HideInInspector] public float spawntimerMax = 5f;
+public class SpawnComponent : MonoBehaviour {
+    [HideInInspector] public float spawntimerMax = 8f;
     [HideInInspector] public float spawntimerCurr = 0f;
     protected Image UICoolDownImage;
     protected float spriteMaxSize = 100;
@@ -89,6 +120,14 @@ class SpawnComponent : MonoBehaviour {
     public Transform spawnPoint;
     public Transform waypointLocation;
 
+    public FactoryDoor FactoryDoor;
+
+    public AudioSource constructionComplete;
+    bool hasPlayedAudio = false;
+
+    public delegate void UnitSpawnedDelegate(MyObject myObject);
+    public event UnitSpawnedDelegate OnUnitSpawned;
+
     virtual protected void Start() {
 
         foreach(InfantryUnit iu in UnitPrefabSO) {
@@ -98,23 +137,33 @@ class SpawnComponent : MonoBehaviour {
             Text queueText = null;
             Text costTxt = null;
 
-            for (int i = 0; i < tmpGO.transform.childCount; i++) {
-                if (tmpGO.transform.GetChild(i).name == "UICooldownImage") {
-                    imageTmp = tmpGO.transform.GetChild(i).GetComponent<Image>();
+            //Debug.Log(tmpGO.transform.GetChild(1).name);
+            for (int i = 0; i < tmpGO.transform.GetChild(1).childCount; i++) {
+
+                Transform t = tmpGO.transform.GetChild(1).GetChild(i);
+
+                //if (t.name == "UICooldownImage") {
+                //     = t.GetComponent<Image>();
+                //}
+                if (t.name == "QueueLength") {
+                    queueText = t.GetComponent<Text>();
                 }
-                else if (tmpGO.transform.GetChild(i).name == "QueueLength") {
-                    queueText = tmpGO.transform.GetChild(i).GetComponent<Text>();
+                else if (t.name == "MainText") {
+                    t.GetComponent<Text>().text = iu.MyObject.myName;
                 }
-                else if (tmpGO.transform.GetChild(i).name == "MainText") {
-                    tmpGO.transform.GetChild(i).GetComponent<Text>().text = iu.name;
+                else if (t.name == "CostText") {
+                    costTxt = t.GetComponent<Text>();
+                    costTxt.text = "Cost: " + iu.MyObject.cost.ToString();
                 }
-                else if (tmpGO.transform.GetChild(i).name == "CostText") {
-                    costTxt = tmpGO.transform.GetChild(i).GetComponent<Text>();
-                    costTxt.text = iu.MyObject.cost.ToString();
+                else if (t.name == "PowerCost") {
+                    t.GetComponent<Text>().text = "Power: " + (-iu.MyObject.powerReq).ToString();
                 }
             }
 
-            infantryUnitToSpawnQueueItem[iu] = new SpawnQueueItem(imageTmp, queueText, iu.MyObject, this, costTxt);
+            imageTmp = tmpGO.transform.GetChild(0).GetComponent<Image>();
+
+            SpawnQueueItem spawnQueue = new SpawnQueueItem(imageTmp, queueText, iu.MyObject, this, costTxt);
+            infantryUnitToSpawnQueueItem[iu] = spawnQueue;
 
             Button tmpButton = tmpGO.GetComponentInChildren<Button>();
             tmpButton.onClick.AddListener(delegate { infantryUnitToSpawnQueueItem[iu].EnqueuePrefab(); });
@@ -144,8 +193,13 @@ class SpawnComponent : MonoBehaviour {
                 currentSpawnQueueItem = spawnQueue.Dequeue();
                 objectToSpawn = currentSpawnQueueItem.thingToSpawn;
                 UICoolDownImage = currentSpawnQueueItem.UICooldownImage;
+                UICoolDownImage.color = new Color(1, 0, 0, (float)122 / 255);
+                hasPlayedAudio = false;
                 queueLength = currentSpawnQueueItem.queueLength;
                 currentSpawnQueueItem.Dequeue();
+                if (FactoryDoor != null) {
+                    FactoryDoor.TurnOnLights();
+                }
             }
             spawntimerCurr += Time.deltaTime;
 
@@ -157,11 +211,25 @@ class SpawnComponent : MonoBehaviour {
 
                     MyObject tmp = Instantiate(objectToSpawn, spawnPoint.position, Quaternion.identity);
                     tmp.Activate();
+                    OnUnitSpawned?.Invoke(tmp);
                     objectToSpawn = null;
                     currentSpawnQueueItem = null;
                     tmp.team = GetComponent<MyObject>().team;
                     tmp.GetComponent<UnityEngine.AI.NavMeshAgent>().destination = waypointLocation.position;
-                }               
+
+                    if(FactoryDoor != null) {
+                        FactoryDoor.OpenDoor();
+                    }
+                }
+                else {
+                    if (!hasPlayedAudio) {
+                        hasPlayedAudio = true;
+                        UICoolDownImage.color = new Color(0, 1, 0, (float)122 / 255);
+                        constructionComplete.Play();
+                        //UICoolDownImage.transform.parent.SetAsLastSibling();
+                        iTween.PunchScale(UICoolDownImage.transform.parent.gameObject, new Vector3(2f, 2f, 2f), 1f);
+                    }
+                }
             }
 
             float spriteSizeFrac = (spawntimerCurr / spawntimerMax);

@@ -16,6 +16,10 @@ public class TutorialInputManager2 : InputManager {
 
     public List<string> buildings = new List<string>();
 
+    #region Quest 0
+    bool familiarized = false;
+    #endregion
+
     #region Quest 1
     bool Q1Initialized = false;
     #endregion
@@ -59,39 +63,45 @@ public class TutorialInputManager2 : InputManager {
                 case 0:
                     break;
                 case 1:
-                    questTogglesInChildren[i].functionToBeCalled = RaytraceForHQ;
+                    questTogglesInChildren[i].functionToBeCalled = Familiarize;
                     break;
                 case 2:
-                    questTogglesInChildren[i].functionToBeCalled = BuildPowerPlant;
+                    questTogglesInChildren[i].functionToBeCalled = RaytraceForHQ;
                     break;
                 case 3:
-                    questTogglesInChildren[i].functionToBeCalled = BuildRefinery;
+                    questTogglesInChildren[i].functionToBeCalled = BuildPowerPlant;
                     break;
                 case 4:
-                    questTogglesInChildren[i].functionToBeCalled = BuildBarracks;
+                    questTogglesInChildren[i].functionToBeCalled = BuildRefinery;
                     break;
                 case 5:
-                    questTogglesInChildren[i].functionToBeCalled = SelectBarracks;
+                    questTogglesInChildren[i].functionToBeCalled = BuildBarracks;
                     break;
                 case 6:
-                    questTogglesInChildren[i].functionToBeCalled = TrainInfantryUnit;
+                    questTogglesInChildren[i].functionToBeCalled = SelectBarracks;
                     break;
                 case 7:
-                    questTogglesInChildren[i].functionToBeCalled = BuildFactory;
+                    questTogglesInChildren[i].functionToBeCalled = TrainInfantryUnit;
                     break;
                 case 8:
-                    questTogglesInChildren[i].functionToBeCalled = SelectFactory;
+                    questTogglesInChildren[i].functionToBeCalled = BuildFactory;
                     break;
                 case 9:
-                    questTogglesInChildren[i].functionToBeCalled = BuildTank;
+                    questTogglesInChildren[i].functionToBeCalled = SelectFactory;
                     break;
                 case 10:
-                    questTogglesInChildren[i].functionToBeCalled = BuildRadar;
+                    questTogglesInChildren[i].functionToBeCalled = BuildTank;
                     break;
                 case 11:
-                    questTogglesInChildren[i].functionToBeCalled = BuildLaserTower;
+                    questTogglesInChildren[i].functionToBeCalled = BuildRadar;
                     break;
                 case 12:
+                    questTogglesInChildren[i].functionToBeCalled = BuildLaserTower;
+                    break;
+                case 13:
+                    questTogglesInChildren[i].functionToBeCalled = RestorePower;
+                    break;
+                case 14:
                     questTogglesInChildren[i].functionToBeCalled = DestroyEnemyHQ;
                     break;
                 default:
@@ -109,7 +119,8 @@ public class TutorialInputManager2 : InputManager {
     // Update is called once per frame
     override protected void Update()
     {
-        base.Update();
+        if(familiarized)
+            base.Update();
 
         //HandleCameraMovement();
         //HandleStandardInput();
@@ -163,6 +174,16 @@ public class TutorialInputManager2 : InputManager {
         }
         
         return false;
+    }
+
+    private bool RestorePower() {
+        GameManager gameManager = FindObjectOfType<GameManager>();
+        if(gameManager.GetPower() > 0) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     bool BuildPowerPlant() {
@@ -302,5 +323,13 @@ public class TutorialInputManager2 : InputManager {
         }
 
         return false;
+    }
+
+    private bool Familiarize() {
+        return familiarized;
+    }
+
+    public void SetFamiliarized(bool f) {
+        familiarized = f;
     }
 }

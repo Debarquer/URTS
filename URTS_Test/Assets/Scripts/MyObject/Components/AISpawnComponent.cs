@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(SpawnComponent))]
 public class AISpawnComponent : MonoBehaviour
 {
-    [HideInInspector] public float spawntimerMax = 8f;
+    public float spawntimerMax = 8f;
     [HideInInspector] public float spawntimerCurr = 0f;
 
     [Tooltip("Any Scriptable Object must also exist in the SpawnComponent")]
@@ -14,8 +14,26 @@ public class AISpawnComponent : MonoBehaviour
 
     SpawnComponent spawnComponent;
 
-    private void Start() {
+    public List<AIMoveComponent> aIMoveComponents = new List<AIMoveComponent>();
+
+    private void OnEnable() {
         spawnComponent = GetComponent<SpawnComponent>();
+        spawnComponent.OnUnitSpawned += AddNewUnit;
+    }
+
+    private void OnDisable() {
+        spawnComponent.OnUnitSpawned -= AddNewUnit;
+    }
+
+    void AddNewUnit(MyObject myObject) {
+        aIMoveComponents.Add(myObject.GetComponent<AIMoveComponent>());
+        if(aIMoveComponents.Count >= 6) {
+            foreach(AIMoveComponent aIMoveComponent in aIMoveComponents) {
+                aIMoveComponent.MoveToHQ();
+            }
+
+            aIMoveComponents.Clear();
+        }
     }
 
     private void Update() {

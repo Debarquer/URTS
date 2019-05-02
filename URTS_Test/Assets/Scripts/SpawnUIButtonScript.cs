@@ -5,12 +5,17 @@ using UnityEngine.EventSystems;
 
 public class SpawnUIButtonScript : EventTrigger
 {
+    public SpawnQueueItem SpawnQueueItem;
+    public SpawnQueueItemTutorial SpawnQueueItemTutorial;
+
     public override void OnPointerClick(PointerEventData data) {
         if(data.button == PointerEventData.InputButton.Right) {
             Debug.Log("OnPointerClick called.");
 
-            if(transform.GetComponentInParent<SpawnComponent>().currentSpawnQueueItem != null)
-                transform.GetComponentInParent<SpawnComponent>().currentSpawnQueueItem.Cancel();
+            if (SpawnQueueItem != null)
+                SpawnQueueItem.Cancel();
+            else if (SpawnQueueItemTutorial != null)
+                SpawnQueueItemTutorial.Cancel();
         }
     }
 }

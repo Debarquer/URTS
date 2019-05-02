@@ -10,7 +10,7 @@ public class MyObject : MonoBehaviour
     // graphics
     //public float currHealth;
     //public float maxHealth = 5;
-    string myName;
+    public string myName;
     string description;
     public MyObjectType myObjectType;
     public Team team;
@@ -27,11 +27,28 @@ public class MyObject : MonoBehaviour
 
     public bool active = false;
     public bool placed = false;
+    public bool insideInfluence = false;
+
+    private void Start() {
+        if(active && placed) {
+            if (team == Team.A) {
+                AddRemoveInfluence addRemoveInfluence = GetComponentInChildren<AddRemoveInfluence>(true);
+                if (addRemoveInfluence != null) {
+                    FindObjectOfType<AddRemoveInfluenceManager>().AddAddRemoveInfluence(addRemoveInfluence);
+                }
+            }
+        }
+    }
 
     public void OnPlaced() {
         if(team == Team.A) {
             FindObjectOfType<GameManager>().UpdatePower(-powerReq);
             placed = true;
+
+            AddRemoveInfluence addRemoveInfluence = GetComponentInChildren<AddRemoveInfluence>(true);
+            if (addRemoveInfluence != null) {
+                FindObjectOfType<AddRemoveInfluenceManager>().AddAddRemoveInfluence(addRemoveInfluence);
+            }
         }
     }
 

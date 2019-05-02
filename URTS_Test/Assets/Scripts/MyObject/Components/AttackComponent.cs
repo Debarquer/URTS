@@ -14,7 +14,7 @@ class AttackComponent : MonoBehaviour {
 
     public MyObject myObject;
 
-    LineRenderer lr;
+    //LineRenderer lr;
     [SerializeField] MyObject targetEnemy;
 
     public MyObjectType attackType;
@@ -29,84 +29,85 @@ class AttackComponent : MonoBehaviour {
 
     [SerializeField] AttackableComponent targetAttackableComponent;
 
+    public AudioSource audioSource;
+
+    public GameObject bullet;
+
     private void Start() {
         myObject = GetComponentInParent<MyObject>();
-        lr = GetComponent<LineRenderer>();
     }
 
     private void Update() {
         if (!GetComponent<MyObject>().active)
             return;
 
+        if (targetEnemy == null || targetAttackableComponent == null) {
+            FindTargetEnemy();
+        }
+
         attackRateCurr += Time.deltaTime;
         if (attackRateCurr > attackRateMax) {
-            if (targetEnemy == null || targetAttackableComponent == null) {
-                List<AttackableComponent> deadenemies = new List<AttackableComponent>();
+            //if (targetEnemy == null || targetAttackableComponent == null) {
+            //    FindTargetEnemy();
+            //}
 
-                targetEnemy = null;
-                targetAttackableComponent = null;
-
-                if (effectiveTargets != null && effectiveTargets.Count > 0) {
-                    //Debug.Log("There are effective targets");
-                    if (targetEnemy == null || targetAttackableComponent == null) {
-                        //Debug.Log("We require a new target");
-                        deadenemies = FindTarget(effectiveTargets);
-                    }
-                    foreach (AttackableComponent deadenemy in deadenemies) {
-                        effectiveTargets.Remove(deadenemy);
-                    }
-                    deadenemies.Clear();
-                }
-
-                if (standardTargets != null && standardTargets.Count > 0) {
-                    if (targetEnemy == null || targetAttackableComponent == null) {
-                        deadenemies = FindTarget(standardTargets);
-                    }
-                    foreach (AttackableComponent deadenemy in deadenemies) {
-                        standardTargets.Remove(deadenemy);
-                    }
-                    deadenemies.Clear();
-                }
-
-                if (ineffectiveTargets != null && ineffectiveTargets.Count > 0) {
-                    if (targetEnemy == null || targetAttackableComponent == null) {
-                        deadenemies = FindTarget(ineffectiveTargets);
-                    }
-                    foreach (AttackableComponent deadenemy in deadenemies) {
-                        ineffectiveTargets.Remove(deadenemy);
-                    }
-                    deadenemies.Clear();
-                }
-            }
-
-            if(targetEnemy != null && targetAttackableComponent != null) {
+            if (targetEnemy != null && targetAttackableComponent != null) {
                 attackRateCurr = 0;
-                targetAttackableComponent.ReceiveDamage(damage * GetDamageModifier(attackType, targetEnemy.myObjectType));
+                MoveToAndDestroy moveToAndDestroy = Instantiate(bullet, firePoint.transform.position, firePoint.rotation).GetComponent<MoveToAndDestroy>();
+                moveToAndDestroy.init(targetEnemy.GetComponent<AttackableComponent>(), GetComponent<MyObject>().myObjectType, 100f, damage);
+            }
+            else {
+                if (audioSource != null) {
+                    if (audioSource.isPlaying) {
+                        audioSource.Stop();
+                    }
+                }
             }
         }
 
         if (weapon != null && targetEnemy != null) {
             weapon.transform.LookAt(targetEnemy.transform);
         }
-        if (lr != null && targetEnemy != null) {
-            lr.enabled = true;
-            if (firePoint != null) {
-                lr.SetPosition(0, firePoint.transform.position);
+    }
+
+    private void FindTargetEnemy() {
+        List<AttackableComponent> deadenemies = new List<AttackableComponent>();
+
+        targetEnemy = null;
+        targetAttackableComponent = null;
+
+        if (effectiveTargets != null && effectiveTargets.Count > 0) {
+            if (targetEnemy == null || targetAttackableComponent == null) {
+                deadenemies = FindTarget(effectiveTargets);
             }
-            else {
-                lr.SetPosition(0, transform.position);
+            foreach (AttackableComponent deadenemy in deadenemies) {
+                effectiveTargets.Remove(deadenemy);
             }
-            lr.SetPosition(1, targetEnemy.transform.position);
+            deadenemies.Clear();
         }
-        else {
-            if(lr != null)
-                lr.enabled = false;
+
+        if (standardTargets != null && standardTargets.Count > 0) {
+            if (targetEnemy == null || targetAttackableComponent == null) {
+                deadenemies = FindTarget(standardTargets);
+            }
+            foreach (AttackableComponent deadenemy in deadenemies) {
+                standardTargets.Remove(deadenemy);
+            }
+            deadenemies.Clear();
+        }
+
+        if (ineffectiveTargets != null && ineffectiveTargets.Count > 0) {
+            if (targetEnemy == null || targetAttackableComponent == null) {
+                deadenemies = FindTarget(ineffectiveTargets);
+            }
+            foreach (AttackableComponent deadenemy in deadenemies) {
+                ineffectiveTargets.Remove(deadenemy);
+            }
+            deadenemies.Clear();
         }
     }
 
     private List<AttackableComponent> FindTarget(List<AttackableComponent> targets){
-        //Debug.Log("Finding targets...");
-
         List<AttackableComponent> deadenemies = new List<AttackableComponent>();
         foreach (AttackableComponent enemy in targets) {
             if (enemy == null) {
@@ -118,19 +119,10 @@ class AttackComponent : MonoBehaviour {
 
                 targetAttackableComponent = enemy;
                 targetEnemy = enemy.GetComponent<MyObject>();
-                //enemy.ReceiveDamage(damage * GetDamageModifier(attackType, enemyObject.myObjectType));
 
                 if (weapon != null) {
                     weapon.transform.LookAt(enemy.transform);
                 }
-                lr.enabled = true;
-                if (firePoint != null) {
-                    lr.SetPosition(0, firePoint.transform.position);
-                }
-                else {
-                    lr.SetPosition(0, transform.position);
-                }
-                lr.SetPosition(1, targetEnemy.transform.position);
 
                 return deadenemies;
             }
@@ -139,7 +131,7 @@ class AttackComponent : MonoBehaviour {
         return deadenemies;
     }
 
-    private float GetDamageModifier(MyObjectType attackType, MyObjectType defenceType) {
+    static public float GetDamageModifier(MyObjectType attackType, MyObjectType defenceType) {
         AttackEffectiviness attackEffectiviness = GetEffectiviness(attackType, defenceType);
 
         switch (attackEffectiviness) {
@@ -190,7 +182,7 @@ class AttackComponent : MonoBehaviour {
         }
     }
 
-    public AttackEffectiviness GetEffectiviness(MyObjectType attackType, MyObjectType defenceType) {
+    static public AttackEffectiviness GetEffectiviness(MyObjectType attackType, MyObjectType defenceType) {
         if (attackType == MyObjectType.Light && defenceType == MyObjectType.Heavy) {
             return AttackEffectiviness.Ineffective;
         }

@@ -16,6 +16,8 @@ public class GameManager : MonoBehaviour
     public GameObject LoseCanvasGO;
     public GameObject WinCanvasGO;
 
+    public Text lowPowerText;
+
     private void Start() {
         if(RadarCanvas != null)
             RadarCanvas.enabled = false;
@@ -40,8 +42,9 @@ public class GameManager : MonoBehaviour
     public void UpdateMinerals(float amount) {
         minerals += amount;
         minerals = Mathf.Clamp(minerals, 0, 999999);
-        if(mineralsText != null)
-            mineralsText.text = "Minerals: " + minerals;
+        if(mineralsText != null) {
+            mineralsText.text = "Minerals: " + ((int)minerals).ToString("D6");
+        }
     }
 
     public void UpdatePower(float amount) {
@@ -53,10 +56,14 @@ public class GameManager : MonoBehaviour
         if (power - amount <= 0 && power > 0) {
             // Power restored
             ActivatePoweredBuildings();
+            if(lowPowerText != null)
+                lowPowerText.gameObject.SetActive(false);
         }
-        else if(power - amount > 0 && power <= 0) {
+        else if(power - amount >= 0 && power <= 0) {
             // Power lost
             DeactivatePoweredBuildings();
+            if (lowPowerText != null)
+                lowPowerText.gameObject.SetActive(true);
         }
     }
 

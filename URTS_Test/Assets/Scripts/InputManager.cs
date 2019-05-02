@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum InputMode { StandardInGame, BuildingPlacement };
+public enum InputMode { StandardInGame, BuildingPlacement, SellBuildings };
 public class InputManager : MonoBehaviour
 {
     #region General variables
@@ -18,7 +18,11 @@ public class InputManager : MonoBehaviour
     public Vector3 _lastMousePosition;
 
     public float cameraTranslateXMax = 1850, cameraTranslateXMin = 100, cameraTranslateYMax = 1000, cameraTranslateYMin = 100;
-    protected float cameraPosMaxX = 199, cameraPosMinX = -29, cameraPosMaxZ = 298, cameraPosMinZ = -49;
+    public float cameraPosMaxX = 199, cameraPosMinX = -29, cameraPosMaxZ = 298, cameraPosMinZ = -49;
+
+    public Canvas HoverIdentifier;
+    float hoverTimrMax = 0.75f;
+    float hoverTimerCurr = 0;
     #endregion
 
     #region InputMode.StandardInGame Variables
@@ -34,6 +38,8 @@ public class InputManager : MonoBehaviour
     protected MyObject buildingToBePlaced = null;
     protected GameObject gameObjectToBePlaced = null;
     protected float cameraTranslateSpeed = 30f;
+
+    public object HandleSellBuildings { get; private set; }
 
     public delegate void BuildingPlacedSuccessfullyDelegate();
     public event BuildingPlacedSuccessfullyDelegate OnBuildingPlacedSuccessfully;
@@ -56,8 +62,30 @@ public class InputManager : MonoBehaviour
                 UnityEngine.SceneManagement.SceneManager.LoadScene("MainMenu");
             }
         }
+        else if (Input.GetKeyUp(KeyCode.O)) {
+            ToggleSellBuildings();
+        }
 
         HandleCameraMovement();
+
+        MyObject myObject = RaycastForMyObject();
+        if(myObject != null) {
+            hoverTimerCurr += Time.deltaTime;
+            if(hoverTimerCurr >= hoverTimrMax) {
+                if (!HoverIdentifier.gameObject.activeSelf) {
+                    HoverIdentifier.gameObject.SetActive(true);
+                }
+                HoverIdentifier.GetComponentInChildren<Text>().text = myObject.myName;
+                HoverIdentifier.GetComponentInChildren<Image>().transform.position = Input.mousePosition + new Vector3(100, 30, 0);
+            }         
+        }
+        else {
+            hoverTimerCurr = 0;
+
+            if (HoverIdentifier.gameObject.activeSelf) {
+                HoverIdentifier.gameObject.SetActive(false);
+            }
+        }
 
         switch (inputMode) {
             case InputMode.StandardInGame:
@@ -65,6 +93,9 @@ public class InputManager : MonoBehaviour
                 break;
             case InputMode.BuildingPlacement:
                 HandleBuildingPlacementInput();
+                break;
+            case InputMode.SellBuildings:
+                HandleSellBuildingsInput();
                 break;
         }
     }
@@ -145,27 +176,27 @@ public class InputManager : MonoBehaviour
             selectionImage.rectTransform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, extents.z);
         }
         if (Input.GetMouseButtonUp(0)) {
-            if (dragTimer < 0.1f) {
-                selectionImage.enabled = false;
+            //if (dragTimer < 0.1f) {
+            //    selectionImage.enabled = false;
 
-                foreach (SelectableComponent selectedObject in selectedObjects) {
-                    if (selectedObject != null) {
-                        //selectedObject.GetComponentInChildren<Renderer>().material.color = Color.white;
-                        selectedObject.Deselect();
-                    }
-                }
-                selectedObjects.Clear();
-                dragTimer = 0;
+            //    foreach (SelectableComponent selectedObject in selectedObjects) {
+            //        if (selectedObject != null) {
+            //            //selectedObject.GetComponentInChildren<Renderer>().material.color = Color.white;
+            //            selectedObject.Deselect();
+            //        }
+            //    }
+            //    selectedObjects.Clear();
+            //    dragTimer = 0;
 
-                ClickableComponent[] clickableComponents = RaycastForClickableComponents();
-                if (clickableComponents != null && clickableComponents.Length > 0)
-                    ClickableComponentManager.instance.UnclickAllClickableComponents();
-                foreach (ClickableComponent clickableComponent in clickableComponents) {
-                    clickableComponent.Click();
-                }
+            //    //ClickableComponent[] clickableComponents = RaycastForClickableComponents();
+            //    //if (clickableComponents != null && clickableComponents.Length > 0)
+            //    //    ClickableComponentManager.instance.UnclickAllClickableComponents();
+            //    //foreach (ClickableComponent clickableComponent in clickableComponents) {
+            //    //    clickableComponent.Click();
+            //    //}
 
-                return;
-            }
+            //    return;
+            //}
             dragTimer = 0;
 
             EndDrag();
@@ -198,12 +229,12 @@ public class InputManager : MonoBehaviour
             Collider[] objectsHoveredOver = Physics.OverlapBox(midPoint, extents);
 
             foreach (Collider c in objectsHoveredOver) {
-                SelectableComponent myObject = c.GetComponent<SelectableComponent>();
-                if (myObject != null) {
-                    selectedObjects.Add(myObject);
-                    myObject.GetComponent<MyObject>().OnGameObjectDisabled += Deselect;
+                SelectableComponent selectableComponent = c.GetComponent<SelectableComponent>();
+                if (selectableComponent != null) {
+                    selectedObjects.Add(selectableComponent);
+                    selectableComponent.GetComponent<MyObject>().OnGameObjectDisabled += Deselect;
 
-                    myObject.Select();
+                    selectableComponent.Select();
                 }
             }
         }
@@ -249,6 +280,30 @@ public class InputManager : MonoBehaviour
         return clickableComponents.ToArray();
     }
 
+    protected MyObject RaycastForMyObject() {
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit[] hits = Physics.RaycastAll(ray);
+        Debug.DrawRay(ray.origin, ray.direction * 100, Color.black, 1f);
+
+        foreach (RaycastHit hit in hits) {
+            //if (hit.transform.name == "AddEnemiesInRange")
+            //    continue;
+
+            MyObject myObject = hit.transform.GetComponent<MyObject>();
+            if (myObject != null) {
+                return myObject;
+            }
+            //else {
+            //    myObject = hit.transform.GetComponentInParent<MyObject>();
+            //    if (myObject != null) {
+            //        return myObject;
+            //    }
+            //}
+        }
+
+        return null;
+    }
+
     protected RaycastHit RaycastToGround() {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
@@ -259,9 +314,12 @@ public class InputManager : MonoBehaviour
     public void InitiateBuildingPlacement(MyObject buildingToBePlaced) {
         this.buildingToBePlaced = buildingToBePlaced;
         inputMode = InputMode.BuildingPlacement;
+        FindObjectOfType<AddRemoveInfluenceManager>().ShowAddRemoveInfluences();
     }
 
     public void EndBuildingPlacement(bool success) {
+        FindObjectOfType<AddRemoveInfluenceManager>().HideAddRemoveInfluences();
+
         if (success) {
             // Activate building
             gameObjectToBePlaced.GetComponent<MyObject>().OnPlaced();
@@ -286,6 +344,10 @@ public class InputManager : MonoBehaviour
     }
 
     protected void HandleBuildingPlacementInput() {
+        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()) {
+            return;
+        }
+
         RaycastHit hit = RaycastToGround();
         if(gameObjectToBePlaced == null) {
             gameObjectToBePlaced = Instantiate(buildingToBePlaced.gameObject, hit.point, Quaternion.identity);
@@ -295,10 +357,36 @@ public class InputManager : MonoBehaviour
         }
 
         if (Input.GetMouseButtonDown(0)) {
-            EndBuildingPlacement(true);
+            if (gameObjectToBePlaced.GetComponent<MyObject>().insideInfluence && hit.transform.name != "NoBuildZone") {
+                EndBuildingPlacement(true);
+            }
         }
         if (Input.GetMouseButtonDown(1)) {
             EndBuildingPlacement(false);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Q)) {
+            gameObjectToBePlaced.transform.Rotate(Vector3.up, -90);
+        }
+        if (Input.GetKeyDown(KeyCode.E)) {
+            gameObjectToBePlaced.transform.Rotate(Vector3.up, 90);
+        }
+    }
+
+    protected void HandleSellBuildingsInput() {
+        if (Input.GetMouseButtonUp(0)) {
+            ClickableComponent[] clickableComponents = RaycastForClickableComponents();
+            foreach (ClickableComponent clickableComponent in clickableComponents) {
+                MyObject myObject = clickableComponent.GetComponent<MyObject>();
+                if (myObject != null && myObject.team == Team.A) {
+                    FindObjectOfType<GameManager>().UpdateMinerals(myObject.cost * 0.9f);
+                    Destroy(myObject.gameObject);
+                }
+
+            }
+        }
+        else if (Input.GetMouseButtonUp(1)) {
+            InitializeStandardInput();
         }
     }
 
@@ -338,6 +426,15 @@ public class InputManager : MonoBehaviour
                 p.y = maxHeight;
             }
             mainCamera.transform.position = p;
+        }
+    }
+
+    public void ToggleSellBuildings() {
+        if(inputMode == InputMode.SellBuildings) {
+            InitializeStandardInput();
+        }
+        else {
+            inputMode = InputMode.SellBuildings;
         }
     }
 }

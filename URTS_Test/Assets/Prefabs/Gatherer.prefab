@@ -172,10 +172,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cost: 100
+  myName: Gatherer
   myObjectType: 0
   team: 0
   powerReq: 0
   active: 0
+  placed: 0
+  insideInfluence: 0
 --- !u!195 &7116673768632780073
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -212,7 +215,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   damage: 2
   attackRateMax: 1
-  attackTypes: 0
+  attackRateCurr: 0
+  attackRange: 15
+  myObject: {fileID: 0}
+  targetEnemy: {fileID: 0}
+  attackType: 0
+  effectiveTargets: []
+  standardTargets: []
+  ineffectiveTargets: []
+  firePoint: {fileID: 0}
+  weapon: {fileID: 0}
+  targetAttackableComponent: {fileID: 0}
+  audioSource: {fileID: 0}
+  bullet: {fileID: 0}
 --- !u!114 &6118568390281825044
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -225,6 +240,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 18b0966039946974486f69f25e0c8c97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isMoving: 0
+  animator: {fileID: 0}
   maxMinerals: 250
   currentMinerals: 0
   gatheringRange: 2
@@ -247,6 +264,7 @@ MonoBehaviour:
   maxHealth: 5
   renderers:
   - {fileID: 7116673767814600923}
+  OnDeathParticlesAndSound: {fileID: 0}
 --- !u!1001 &1440446753958399748
 PrefabInstance:
   m_ObjectHideFlags: 0

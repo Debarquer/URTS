@@ -22,7 +22,8 @@ public class QuestToggle : MonoBehaviour
     public void Complete() {
         iTween.PunchScale(gameObject, new Vector3(1.5f, 1.5f, 1.5f), 1.5f);
 
-        text.color = Color.green;
+        //text.color = Color.green;
+        //GetComponentInChildren<Outline>().effectColor = Color.gray;
 
         completed = true;
         checkmark.SetActive(true);

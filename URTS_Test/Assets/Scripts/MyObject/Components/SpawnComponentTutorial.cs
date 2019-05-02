@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 
-class SpawnQueueItemTutorial {
+public class SpawnQueueItemTutorial {
     public TutorialInputManager2 TutorialInputManager2;
 
     public Image UICooldownImage;
@@ -28,6 +28,8 @@ class SpawnQueueItemTutorial {
         gameManager = GameObject.FindObjectOfType<GameManager>();
 
         TutorialInputManager2 = GameObject.FindObjectOfType<TutorialInputManager2>();
+
+        image.GetComponentInParent<SpawnUIButtonScript>().SpawnQueueItemTutorial = this;
     }
 
     public void EnqueuePrefab() {
@@ -40,7 +42,7 @@ class SpawnQueueItemTutorial {
             spawnComponent.spawnQueue.Enqueue(this);
             nrOfQueue++;
 
-            queueLength.text = (Mathf.Max(nrOfQueue, 0)).ToString();
+            queueLength.text = "Queue: " + (Mathf.Max(nrOfQueue, 0)).ToString();
         }
         else if (spawnComponent.spawntimerCurr >= spawnComponent.spawntimerMax) {
             // We are not allowed to queue duplicates and we are already in the queue
@@ -55,7 +57,7 @@ class SpawnQueueItemTutorial {
 
     public void Dequeue() {
         nrOfQueue--;
-        queueLength.text = (Mathf.Max(nrOfQueue, 0)).ToString();
+        queueLength.text = "Queue: " + (Mathf.Max(nrOfQueue, 0)).ToString();
     }
 
     public void CompleteQueueItem() {
@@ -67,13 +69,39 @@ class SpawnQueueItemTutorial {
     }
 
     public void Cancel() {
-        gameManager.UpdateMinerals(thingToSpawn.cost);
-        CompleteQueueItem();
+        if (spawnComponent.currentSpawnQueueItem == this) {
+            gameManager.UpdateMinerals(thingToSpawn.cost);
+            CompleteQueueItem();
+        }
+        else {
+            if (spawnComponent.spawnQueue.Contains(this)) {
+                //spawnComponent.spawnQueue.
+                Queue<SpawnQueueItemTutorial> tmpqueue = new Queue<SpawnQueueItemTutorial>();
+
+                bool hasCanceledOnce = false;
+                while (spawnComponent.spawnQueue.Count > 0) {
+                    SpawnQueueItemTutorial spawnQueueItem = spawnComponent.spawnQueue.Dequeue();
+                    if (spawnQueueItem == this && !hasCanceledOnce) {
+                        hasCanceledOnce = true;
+                        spawnQueueItem.nrOfQueue--;
+                        spawnQueueItem.queueLength.text = "Queue: " + nrOfQueue.ToString();
+                        continue;
+                    }
+                    else {
+                        tmpqueue.Enqueue(spawnQueueItem);
+                    }
+                }
+
+                while (tmpqueue.Count > 0) {
+                    spawnComponent.spawnQueue.Enqueue(tmpqueue.Dequeue());
+                }
+            }
+        }
     }
 }
 
 
-class SpawnComponentTutorial : MonoBehaviour {
+public class SpawnComponentTutorial : MonoBehaviour {
     [HideInInspector] public float spawntimerMax = 5f;
     [HideInInspector] public float spawntimerCurr = 0f;
     protected Image UICoolDownImage;
@@ -97,6 +125,11 @@ class SpawnComponentTutorial : MonoBehaviour {
     public Transform spawnPoint;
     public Transform waypointLocation;
 
+    public FactoryDoor FactoryDoor;
+
+    public AudioSource constructionComplete;
+    bool hasPlayedAudio = false;
+
     virtual protected void Start() {
 
         foreach (InfantryUnit iu in UnitPrefabSO) {
@@ -106,21 +139,30 @@ class SpawnComponentTutorial : MonoBehaviour {
             Text queueText = null;
             Text costTxt = null;
 
-            for (int i = 0; i < tmpGO.transform.childCount; i++) {
-                if (tmpGO.transform.GetChild(i).name == "UICooldownImage") {
-                    imageTmp = tmpGO.transform.GetChild(i).GetComponent<Image>();
+            //Debug.Log(tmpGO.transform.GetChild(1).name);
+            for (int i = 0; i < tmpGO.transform.GetChild(1).childCount; i++) {
+
+                Transform t = tmpGO.transform.GetChild(1).GetChild(i);
+
+                //if (t.name == "UICooldownImage") {
+                //     = t.GetComponent<Image>();
+                //}
+                if (t.name == "QueueLength") {
+                    queueText = t.GetComponent<Text>();
                 }
-                else if (tmpGO.transform.GetChild(i).name == "QueueLength") {
-                    queueText = tmpGO.transform.GetChild(i).GetComponent<Text>();
+                else if (t.name == "MainText") {
+                    t.GetComponent<Text>().text = iu.MyObject.myName;
                 }
-                else if (tmpGO.transform.GetChild(i).name == "MainText") {
-                    tmpGO.transform.GetChild(i).GetComponent<Text>().text = iu.name;
+                else if (t.name == "CostText") {
+                    costTxt = t.GetComponent<Text>();
+                    costTxt.text = "Cost: " + iu.MyObject.cost.ToString();
                 }
-                else if (tmpGO.transform.GetChild(i).name == "CostText") {
-                    costTxt = tmpGO.transform.GetChild(i).GetComponent<Text>();
-                    costTxt.text = iu.MyObject.cost.ToString();
+                else if (t.name == "PowerCost") {
+                    t.GetComponent<Text>().text = "Power: " + (-iu.MyObject.powerReq).ToString();
                 }
             }
+
+            imageTmp = tmpGO.transform.GetChild(0).GetComponent<Image>();
 
             infantryUnitToSpawnQueueItem[iu] = new SpawnQueueItemTutorial(imageTmp, queueText, iu.MyObject, this, costTxt);
 
@@ -152,6 +194,8 @@ class SpawnComponentTutorial : MonoBehaviour {
                 currentSpawnQueueItem = spawnQueue.Dequeue();
                 objectToSpawn = currentSpawnQueueItem.thingToSpawn;
                 UICoolDownImage = currentSpawnQueueItem.UICooldownImage;
+                hasPlayedAudio = false;
+                UICoolDownImage.color = new Color(1, 0, 0, (float)122 / 255);
                 queueLength = currentSpawnQueueItem.queueLength;
                 currentSpawnQueueItem.Dequeue();
             }
@@ -173,6 +217,18 @@ class SpawnComponentTutorial : MonoBehaviour {
                     tmp.team = GetComponent<MyObject>().team;
                     tmp.GetComponent<UnityEngine.AI.NavMeshAgent>().destination = waypointLocation.position;
 
+                    if (FactoryDoor != null) {
+                        FactoryDoor.OpenDoor();
+                    }
+                }
+                else {
+                    if (!hasPlayedAudio) {
+                        hasPlayedAudio = true;
+                        UICoolDownImage.color = new Color(0, 1, 0, (float)122 / 255);
+                        constructionComplete.Play();
+                        //UICoolDownImage.transform.parent.SetAsLastSibling();
+                        iTween.PunchScale(UICoolDownImage.transform.parent.gameObject, new Vector3(2f, 2f, 2f), 1f);
+                    }
                 }
             }
 

@@ -24,6 +24,8 @@ public class SelectableComponent : MonoBehaviour
     }
 
     public void Select() {
+        if (GetComponent<MyObject>().team != Team.A)
+            return;
 
         OnSelect?.Invoke();
 
@@ -38,6 +40,8 @@ public class SelectableComponent : MonoBehaviour
     }
 
     public void Deselect() {
+        if (GetComponent<MyObject>().team != Team.A)
+            return;
 
         OnDeselect?.Invoke();
 

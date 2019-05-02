@@ -8,6 +8,9 @@ using UnityEngine.AI;
 public class MoveComponent : MonoBehaviour {
 
     NavMeshAgent navMeshAgent;
+    public bool isMoving;
+
+    public Animator animator;
 
     virtual public void SetAgentDestination(Vector3 destination) {
         if(navMeshAgent == null) {
@@ -19,5 +22,16 @@ public class MoveComponent : MonoBehaviour {
         }
 
         navMeshAgent.destination = destination;
+    }
+
+    private void Update() {
+        //if(animator != null) {
+        //    if (navMeshAgent.remainingDistance > 2f) {
+        //        animator.SetBool("isMoving", true);
+        //    }
+        //    else {
+        //        animator.SetBool("isMoving", false);
+        //    }
+        //}
     }
 }

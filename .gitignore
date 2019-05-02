@@ -9,6 +9,10 @@
 [Bb]uild/
 [Bb]uilds/
 [Ll]ogs/
+[Pp]lugins/
+[Ff]onts/
+Ground textures pack/
+PostProcessing/
 
 # Never ignore Asset meta data
 ![Aa]ssets/**/*.meta

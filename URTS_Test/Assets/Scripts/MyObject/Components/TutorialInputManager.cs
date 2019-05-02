@@ -12,6 +12,10 @@ public class TutorialInputManager : InputManager
     public QuestToggle currentQuest;
     public Queue<QuestToggle> questToggles = new Queue<QuestToggle>();
 
+    #region Quest 1
+    bool familiarized = false;
+    #endregion
+
     #region Quest 3
     public List<AttackableComponent> Q3EnemyUnits;
     #endregion
@@ -37,33 +41,36 @@ public class TutorialInputManager : InputManager
         for(int i = 0; i < questTogglesInChildren.Length; i++){
             switch (i) {
                 case 0:
-                    questTogglesInChildren[i].functionToBeCalled = SelectUnit;
+                    questTogglesInChildren[i].functionToBeCalled = Familiarize;
                     break;
                 case 1:
-                    questTogglesInChildren[i].functionToBeCalled = SelectUnits;
-                    break;
-                case 2:
-                    questTogglesInChildren[i].functionToBeCalled = MoveUnit;
-                    break;
-                case 3:
-                    questTogglesInChildren[i].functionToBeCalled = AttackUnitsToTheNorth;
-                    break;
-                case 4:
                     questTogglesInChildren[i].functionToBeCalled = MoveCameraWASD;
                     break;
-                case 5:
+                case 2:
                     questTogglesInChildren[i].functionToBeCalled = MoveCameraScreenEdge;
                     break;
-                case 6:
+                case 3:
                     questTogglesInChildren[i].functionToBeCalled = MoveCameraMiddleMouseButton;
                     break;
-                case 7:
+                case 4:
                     questTogglesInChildren[i].functionToBeCalled = ZoomCamera;
                     break;
+                case 5:
+                    questTogglesInChildren[i].functionToBeCalled = SelectUnit;
+                    break;
+                case 6:
+                    questTogglesInChildren[i].functionToBeCalled = SelectUnits;
+                    break;
+                case 7:
+                    questTogglesInChildren[i].functionToBeCalled = MoveUnit;
+                    break;
                 case 8:
-                    questTogglesInChildren[i].functionToBeCalled = DestroySpawner;
+                    questTogglesInChildren[i].functionToBeCalled = AttackUnitsToTheNorth;
                     break;
                 case 9:
+                    questTogglesInChildren[i].functionToBeCalled = DestroySpawner;
+                    break;
+                case 10:
                     questTogglesInChildren[i].functionToBeCalled = DestroyEnemyHQ;
                     break;
                 default:
@@ -73,8 +80,14 @@ public class TutorialInputManager : InputManager
             questToggles.Enqueue(questTogglesInChildren[i]);
             questTogglesInChildren[i].gameObject.SetActive(false);
         }
+    }
 
-        //InstantiateNewQuestToggle("Select your unit to continue");
+    private bool Familiarize() {
+        return familiarized;
+    }
+
+    public void SetFamiliarized(bool f) {
+        familiarized = f;
     }
 
     private bool DestroyEnemyHQ() {
@@ -249,6 +262,10 @@ public class TutorialInputManager : InputManager
     }
 
     bool SelectUnit() {
+
+        HandleCameraMovement();
+        HandleStandardInput();
+
         if (Input.GetMouseButtonDown(0)) {
             StartDrag();
         }
@@ -300,6 +317,10 @@ public class TutorialInputManager : InputManager
     }
 
     bool SelectUnits() {
+
+        HandleCameraMovement();
+        HandleStandardInput();
+
         if (Input.GetMouseButtonDown(0)) {
             StartDrag();
         }
@@ -341,7 +362,7 @@ public class TutorialInputManager : InputManager
 
             EndDrag();
 
-            if (selectedObjects != null && selectedObjects.Count == 9)
+            if (selectedObjects != null && selectedObjects.Count > 1)
                 return true;
             else
                 return false;
@@ -351,6 +372,10 @@ public class TutorialInputManager : InputManager
     }
 
     bool MoveUnit() {
+
+        HandleCameraMovement();
+        HandleStandardInput();
+
         if (Input.GetMouseButtonDown(1)) {
             RaycastHit hit = RaycastToGround();
 

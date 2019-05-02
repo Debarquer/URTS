@@ -11,11 +11,13 @@ public class ClickableComponent : MonoBehaviour
     public event OnUnClickDelegate OnUnClick;
 
     private void OnEnable() {
-        ClickableComponentManager.instance.AddClickableComponent(this);
+        if(ClickableComponentManager.instance != null)
+            ClickableComponentManager.instance.AddClickableComponent(this);
     }
 
     private void OnDisable() {
-        ClickableComponentManager.instance.RemoveClickableComponent(this);
+        if (ClickableComponentManager.instance != null)
+            ClickableComponentManager.instance.RemoveClickableComponent(this);
     }
 
     public void Click() {
